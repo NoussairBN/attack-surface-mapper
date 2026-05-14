@@ -50,6 +50,14 @@ PATTERNS: Dict[str, RiskPattern] = {
         cwe         = "CWE-939",
         owasp       = "M1"
     ),
+    "IMPLICIT_INTENT_SENSITIVE": RiskPattern(
+        id          = "IMPLICIT_INTENT_SENSITIVE",
+        name        = "Action sensible exposée via Intent",
+        description = "Le composant écoute une action système ou sensible sans protection. Risque d'Intent Spoofing/Hijacking.",
+        severity    = RiskLevel.MEDIUM,
+        cwe         = "CWE-927",
+        owasp       = "M1"
+    ),
 }
 
 def get_pattern(pattern_id: str) -> RiskPattern:

@@ -59,6 +59,35 @@ def check_exported_no_permission(component: AndroidComponent) -> List[Finding]:
         ))
         
     return findings
+def check_implicit_intent_sensitive(component: AndroidComponent) -> List[Finding]:
+    """Détecte si le composant écoute des actions système critiques."""
+    findings = []
+    
+    # Liste des actions Android considérées comme sensibles
+    SENSITIVE_ACTIONS = {
+        "android.intent.action.SEND",
+        "android.intent.action.SEND_MULTIPLE",
+        "android.intent.action.CALL",
+        "android.intent.action.BOOT_COMPLETED",
+        "android.intent.action.PACKAGE_REPLACED",
+        "android.provider.Telephony.SMS_RECEIVED"
+    }
+    
+    for intent_filter in component.intent_filters:
+        for action in intent_filter.actions:
+            if action in SENSITIVE_ACTIONS:
+                pattern = PATTERNS["IMPLICIT_INTENT_SENSITIVE"]
+                findings.append(Finding(
+                    pattern_id=pattern.id, 
+                    component_name=component.name, 
+                    component_type=component.component_type,
+                    severity=pattern.severity, 
+                    cwe=pattern.cwe,
+                    detail=f"Action critique '{action}' détectée dans un intent-filter. Si le composant n'a pas de permission stricte, une app malveillante peut forcer cette action.",
+                    evidence={"action": action}
+                ))
+                
+    return findings
 
 def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     """Point d'entrée principal de l'analyse P2."""
@@ -71,6 +100,7 @@ def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     all_components = manifest.activities + manifest.services + manifest.receivers + manifest.providers
     for comp in all_components:
         all_findings.extend(check_exported_no_permission(comp))
+        all_findings.extend(check_implicit_intent_sensitive(comp)) # <-- C'EST ICI QU'IL FAUT L'AJOUTER
         
         # Ajoutons la détection des Deep Links (BROWSABLE)
         for intent_filter in comp.intent_filters:
