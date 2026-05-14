@@ -91,19 +91,20 @@ def check_implicit_intent_sensitive(component: AndroidComponent) -> List[Finding
 
 def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     """Point d'entrée principal de l'analyse P2."""
-    # L'import est décalé ici pour casser la boucle circulaire !
     from detection.fileprovider_checker import check_fileprovider_exported
+    from detection.permission_analyzer import analyze_permissions
+
     all_findings = []
-    
+
     # 1. Analyse globale
     all_findings.extend(check_manifest_flags(manifest))
-    
+
     # 2. Itération sur tous les composants pour les failles spécifiques
     all_components = manifest.activities + manifest.services + manifest.receivers + manifest.providers
     for comp in all_components:
         all_findings.extend(check_exported_no_permission(comp))
         all_findings.extend(check_implicit_intent_sensitive(comp))
-        
+
         # Détection des Deep Links (BROWSABLE)
         for intent_filter in comp.intent_filters:
             if "android.intent.category.BROWSABLE" in intent_filter.categories:
@@ -111,12 +112,15 @@ def analyze_all_components(manifest: AppManifest) -> List[Finding]:
                 all_findings.append(Finding(
                     pattern_id=pattern.id, component_name=comp.name, component_type=comp.component_type,
                     severity=pattern.severity, cwe=pattern.cwe,
-                    detail=f"Ce composant accepte des Deep Links...",
+                    detail=f"Ce composant accepte des Deep Links depuis un navigateur internet via les schemes: {intent_filter.data_schemes}.",
                     evidence={"categories": intent_filter.categories, "schemes": intent_filter.data_schemes}
                 ))
 
-    # 3. Analyse spécifique des Providers (NOUVEAU)
+    # 3. Analyse spécifique des Providers
     for provider in manifest.providers:
         all_findings.extend(check_fileprovider_exported(provider))
-                
+
+    # 4. Matrice des permissions globales (NOUVEAU)
+    all_findings.extend(analyze_permissions(manifest))
+
     return all_findings

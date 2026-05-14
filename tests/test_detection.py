@@ -55,3 +55,25 @@ def test_fileprovider_exported_detected():
     assert len(findings) == 1
     assert findings[0].pattern_id == "FILEPROVIDER_EXPORTED"
     assert findings[0].severity.value == "critical"
+
+from detection.permission_analyzer import analyze_permissions
+
+def test_dangerous_perm_missing_detected():
+    """Vérifie le scénario d'attaque Confused Deputy (CWE-862)."""
+    # 1. On crée une Activity vulnérable (exportée, sans permission)
+    vuln_activity = Activity(name="BridgeActivity", component_type="activity", exported=True, permission=None)
+    
+    # 2. On simule un Manifest qui possède cette Activity ET une permission dangereuse (ex: lire les SMS)
+    manifest = AppManifest(
+        package="com.vuln.app",
+        uses_permissions=["android.permission.RECEIVE_SMS"], # Permission critique globale
+        activities=[vuln_activity]
+    )
+    
+    # 3. On lance l'analyse
+    findings = analyze_permissions(manifest)
+    
+    # 4. On vérifie que notre moteur lève bien l'alerte
+    assert len(findings) == 1
+    assert findings[0].pattern_id == "DANGEROUS_PERM_MISSING"
+    assert findings[0].severity.value == "high"

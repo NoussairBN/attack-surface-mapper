@@ -66,6 +66,14 @@ PATTERNS: Dict[str, RiskPattern] = {
         cwe         = "CWE-200",
         owasp       = "M2"
     ),
+    "DANGEROUS_PERM_MISSING": RiskPattern(
+        id          = "DANGEROUS_PERM_MISSING",
+        name        = "Composant exposé avec permissions globales dangereuses",
+        description = "L'application possède des permissions critiques (Caméra, SMS, etc.) mais expose un composant sans exiger de permission pour l'appeler. Risque d'abus de privilèges (Confused Deputy).",
+        severity    = RiskLevel.HIGH,
+        cwe         = "CWE-862",
+        owasp       = "M6"
+    ),
 }
 
 def get_pattern(pattern_id: str) -> RiskPattern:
