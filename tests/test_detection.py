@@ -41,3 +41,17 @@ def test_implicit_intent_sensitive_detected():
     
     assert len(findings) == 1
     assert findings[0].pattern_id == "IMPLICIT_INTENT_SENSITIVE"
+
+from core.component_model import Provider
+from detection.fileprovider_checker import check_fileprovider_exported
+
+def test_fileprovider_exported_detected():
+    """Vérifie qu'un FileProvider exporté lève bien une alerte critique."""
+    # On crée nous-mêmes un faux composant pour tester notre règle, 
+    # sans avoir besoin d'un vrai fichier XML parsé par P1 !
+    provider = Provider(name="MyVulnFileProvider", component_type="provider", exported=True, is_file_provider=True)
+    findings = check_fileprovider_exported(provider)
+    
+    assert len(findings) == 1
+    assert findings[0].pattern_id == "FILEPROVIDER_EXPORTED"
+    assert findings[0].severity.value == "critical"

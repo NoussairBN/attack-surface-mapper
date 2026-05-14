@@ -91,6 +91,8 @@ def check_implicit_intent_sensitive(component: AndroidComponent) -> List[Finding
 
 def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     """Point d'entrée principal de l'analyse P2."""
+    # L'import est décalé ici pour casser la boucle circulaire !
+    from detection.fileprovider_checker import check_fileprovider_exported
     all_findings = []
     
     # 1. Analyse globale
@@ -100,17 +102,21 @@ def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     all_components = manifest.activities + manifest.services + manifest.receivers + manifest.providers
     for comp in all_components:
         all_findings.extend(check_exported_no_permission(comp))
-        all_findings.extend(check_implicit_intent_sensitive(comp)) # <-- C'EST ICI QU'IL FAUT L'AJOUTER
+        all_findings.extend(check_implicit_intent_sensitive(comp))
         
-        # Ajoutons la détection des Deep Links (BROWSABLE)
+        # Détection des Deep Links (BROWSABLE)
         for intent_filter in comp.intent_filters:
             if "android.intent.category.BROWSABLE" in intent_filter.categories:
                 pattern = PATTERNS["DEEP_LINK_EXPOSED"]
                 all_findings.append(Finding(
                     pattern_id=pattern.id, component_name=comp.name, component_type=comp.component_type,
                     severity=pattern.severity, cwe=pattern.cwe,
-                    detail=f"Ce composant accepte des Deep Links depuis un navigateur internet via les schemes: {intent_filter.data_schemes}.",
+                    detail=f"Ce composant accepte des Deep Links...",
                     evidence={"categories": intent_filter.categories, "schemes": intent_filter.data_schemes}
                 ))
+
+    # 3. Analyse spécifique des Providers (NOUVEAU)
+    for provider in manifest.providers:
+        all_findings.extend(check_fileprovider_exported(provider))
                 
     return all_findings

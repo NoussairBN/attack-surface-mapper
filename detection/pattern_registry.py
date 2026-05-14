@@ -58,6 +58,14 @@ PATTERNS: Dict[str, RiskPattern] = {
         cwe         = "CWE-927",
         owasp       = "M1"
     ),
+    "FILEPROVIDER_EXPORTED": RiskPattern(
+        id          = "FILEPROVIDER_EXPORTED",
+        name        = "FileProvider exporté publiquement",
+        description = "Un FileProvider a android:exported=true. C'est une faille critique permettant l'accès direct aux fichiers internes.",
+        severity    = RiskLevel.CRITICAL,
+        cwe         = "CWE-200",
+        owasp       = "M2"
+    ),
 }
 
 def get_pattern(pattern_id: str) -> RiskPattern:
