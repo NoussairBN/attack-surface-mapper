@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <key id="label" for="all" attr.name="label" attr.type="string"/>
+  <key id="type" for="node" attr.name="type" attr.type="string"/>
+  <key id="risk" for="node" attr.name="risk" attr.type="string"/>
+  <graph id="G" edgedefault="directed">
+    <node id="main">
+      <data key="label">MainActivity</data>
+      <data key="type">activity</data>
+      <data key="risk">high</data>
+    </node>
+    <node id="auth">
+      <data key="label">AuthService</data>
+      <data key="type">service</data>
+      <data key="risk">medium</data>
+    </node>
+    <node id="data">
+      <data key="label">DataProvider</data>
+      <data key="type">provider</data>
+      <data key="risk">critical</data>
+    </node>
+    <node id="internal">
+      <data key="label">InternalHelper</data>
+      <data key="type">activity</data>
+      <data key="risk">low</data>
+    </node>
+    <node id="broadcast">
+      <data key="label">NetworkReceiver</data>
+      <data key="type">receiver</data>
+      <data key="risk">high</data>
+    </node>
+    <edge source="main" target="auth">
+      <data key="label">start_auth</data>
+    </edge>
+    <edge source="main" target="data">
+      <data key="label">query_data</data>
+    </edge>
+    <edge source="auth" target="data">
+      <data key="label">requires_permission</data>
+    </edge>
+    <edge source="broadcast" target="main">
+      <data key="label">on_network_change</data>
+    </edge>
+  </graph>
+</graphml>

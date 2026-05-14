@@ -1,5 +1,6 @@
 """Mermaid diagram builder for graph visualization."""
 
+import re
 from typing import List, Dict, Optional
 from .graph_model import GraphModel, ComponentNode, IntentEdge, ComponentType, RiskLevel, EdgeType
 
@@ -9,7 +10,7 @@ class MermaidBuilder:
     
     def __init__(self, graph_model: GraphModel):
         self.graph = graph_model
-        self.node_ids: Dict[str, str] = {}  # Map original IDs to Mermaid IDs
+        self.node_ids: Dict[str, str] = {}
         self._generate_node_ids()
     
     def _generate_node_ids(self) -> None:
@@ -17,94 +18,38 @@ class MermaidBuilder:
         for idx, node_id in enumerate(self.graph.nodes.keys()):
             self.node_ids[node_id] = f"N{idx}"
     
-    def _get_node_style(self, node: ComponentNode) -> str:
-        """Get Mermaid node styling."""
-        color_map = {
-            RiskLevel.CRITICAL: "#ffcccc",
-            RiskLevel.HIGH: "#ffe6cc", 
-            RiskLevel.MEDIUM: "#ffffcc",
-            RiskLevel.LOW: "#ccffcc",
-            RiskLevel.INFO: "#cce5ff"
-        }
-        
-        shape_map = {
-            ComponentType.ACTIVITY: "([{}])",
-            ComponentType.SERVICE: "{{{{{}}}}}",
-            ComponentType.BROADCAST_RECEIVER: "(({}))",
-            ComponentType.CONTENT_PROVIDER: "[({})]"
-        }
-        
-        color = color_map.get(node.risk_level, "#e0e0e0")
-        shape = shape_map.get(node.type, "[{}]")
-        
-        # Add export badge
-        name = node.name
-        if node.exported:
-            name = f"{name} 🔓"
-        
-        return shape.format(name), color
+    def _clean_string(self, text: str) -> str:
+        """Clean string for Mermaid compatibility."""
+        if not text:
+            return "unknown"
+        # Remove special characters and keep only alphanumeric and underscores
+        clean = re.sub(r'[^a-zA-Z0-9_]', '_', text)
+        # Replace multiple underscores with single
+        clean = re.sub(r'_+', '_', clean)
+        # Remove leading/trailing underscores
+        clean = clean.strip('_')
+        return clean if clean else "component"
     
-    def _build_node_definition(self, node_id: str, node: ComponentNode) -> str:
-        """Build a single node definition."""
-        mermaid_id = self.node_ids[node_id]
-        label, color = self._get_node_style(node)
-        return f'    {mermaid_id}{label}'
-    
-    def _build_edge_definition(self, edge: IntentEdge) -> str:
-        """Build a single edge definition."""
-        source_id = self.node_ids[edge.source_id]
-        target_id = self.node_ids[edge.target_id]
-        
-        # Different line styles for edge types
-        style_map = {
-            EdgeType.INTENT: "-->",
-            EdgeType.PERMISSION: "-.->",
-            EdgeType.DATA_FLOW: "-..->",
-            EdgeType.EXPORT: "==>"
+    def _get_node_shape(self, node: ComponentNode, display_name: str) -> str:
+        """Get Mermaid node shape based on component type."""
+        shapes = {
+            ComponentType.ACTIVITY: f"[{display_name}]",
+            ComponentType.SERVICE: f"{{{display_name}}}",
+            ComponentType.BROADCAST_RECEIVER: f"({display_name})",
+            ComponentType.CONTENT_PROVIDER: f"[{display_name}]"
         }
-        
-        style = style_map.get(edge.type, "-->")
-        
-        if edge.label:
-            return f'    {source_id} {style}|{edge.label}| {target_id}'
-        else:
-            return f'    {source_id} {style} {target_id}'
-    
-    def _build_styling_definitions(self) -> List[str]:
-        """Build CSS class styling for nodes."""
-        styles = []
-        risk_classes = {}
-        
-        # Group nodes by risk level
-        for node_id, node in self.graph.nodes.items():
-            risk = node.risk_level.value
-            if risk not in risk_classes:
-                risk_classes[risk] = []
-            risk_classes[risk].append(self.node_ids[node_id])
-        
-        # Define styles for each risk level
-        style_map = {
-            RiskLevel.CRITICAL.value: "fill:#ffcccc,stroke:#cc0000,stroke-width:3px",
-            RiskLevel.HIGH.value: "fill:#ffe6cc,stroke:#ff6600,stroke-width:2px",
-            RiskLevel.MEDIUM.value: "fill:#ffffcc,stroke:#ccaa00,stroke-width:2px", 
-            RiskLevel.LOW.value: "fill:#ccffcc,stroke:#00aa00,stroke-width:1px",
-            RiskLevel.INFO.value: "fill:#cce5ff,stroke:#0066cc,stroke-width:1px"
-        }
-        
-        for risk, node_list in risk_classes.items():
-            if node_list:
-                style = style_map.get(risk, "fill:#e0e0e0,stroke:#666")
-                class_name = f"{risk}Node"
-                styles.append(f'    classDef {class_name} {style};')
-                styles.append(f'    class {",".join(node_list)} {class_name};')
-        
-        return styles
+        return shapes.get(node.type, f"[{display_name}]")
     
     def build(self) -> str:
         """Build complete Mermaid flowchart code."""
-        lines = ["```mermaid", "flowchart LR"]
+        lines = ["flowchart TB"]
         
-        # Add subgraphs for exported vs internal
+        # Add title
+        lines.append("%% Attack Surface Graph")
+        lines.append("%% Generated by Attack Surface Mapper")
+        lines.append("")
+        
+        # Create subgraphs for better organization
         exported_nodes = []
         internal_nodes = []
         
@@ -114,66 +59,78 @@ class MermaidBuilder:
             else:
                 internal_nodes.append(node_id)
         
-        # Build internal components subgraph
+        # Internal components subgraph
         if internal_nodes:
-            lines.append("    subgraph InternalComponents[Internal Components]")
+            lines.append("    subgraph InternalComponents [Internal Components]")
+            lines.append("        direction TB")
             for node_id in internal_nodes:
-                if node_id in self.graph.nodes:
-                    lines.append(self._build_node_definition(node_id, self.graph.nodes[node_id]))
+                node = self.graph.nodes[node_id]
+                mermaid_id = self.node_ids[node_id]
+                clean_name = self._clean_string(node.name)
+                shape = self._get_node_shape(node, clean_name)
+                lines.append(f"        {mermaid_id}{shape}")
             lines.append("    end")
+            lines.append("")
         
-        # Build exported components subgraph
+        # Exported components subgraph
         if exported_nodes:
-            lines.append("    subgraph ExportedComponents[🔓 Exported Components]")
+            lines.append("    subgraph ExportedComponents [Exported Components]")
+            lines.append("        direction TB")
             for node_id in exported_nodes:
-                if node_id in self.graph.nodes:
-                    lines.append(self._build_node_definition(node_id, self.graph.nodes[node_id]))
+                node = self.graph.nodes[node_id]
+                mermaid_id = self.node_ids[node_id]
+                clean_name = self._clean_string(node.name)
+                shape = self._get_node_shape(node, clean_name)
+                lines.append(f"        {mermaid_id}{shape}")
             lines.append("    end")
-        
-        # Add standalone nodes not in subgraphs
-        all_subgraph_nodes = set(internal_nodes + exported_nodes)
-        for node_id, node in self.graph.nodes.items():
-            if node_id not in all_subgraph_nodes:
-                lines.append(self._build_node_definition(node_id, node))
+            lines.append("")
         
         # Add edges
-        lines.append("")
         for edge in self.graph.edges:
-            lines.append(self._build_edge_definition(edge))
+            source_id = self.node_ids[edge.source_id]
+            target_id = self.node_ids[edge.target_id]
+            
+            # Different line styles for edge types
+            style_map = {
+                EdgeType.INTENT: "-->",
+                EdgeType.PERMISSION: "-.->",
+                EdgeType.DATA_FLOW: "-..->",
+                EdgeType.EXPORT: "==>"
+            }
+            
+            style = style_map.get(edge.type, "-->")
+            
+            if edge.label:
+                clean_label = self._clean_string(edge.label)
+                lines.append(f"    {source_id} {style}|{clean_label}| {target_id}")
+            else:
+                lines.append(f"    {source_id} {style} {target_id}")
         
-        # Add styling
-        lines.extend(self._build_styling_definitions())
+        # Add styling classes
+        lines.append("")
+        lines.append("%% Risk-based styling")
         
-        lines.append("```")
-        return "\n".join(lines)
-    
-    def build_html_embed(self) -> str:
-        """Build HTML embed code for Mermaid."""
-        mermaid_code = self.build()
-        return f"""
-<div class="mermaid-container">
-    <div class="mermaid">
-{mermaid_code}
-    </div>
-</div>
-"""
-    
-    def build_with_interactivity(self) -> str:
-        """Build Mermaid with interactive tooltips."""
-        lines = ["```mermaid", "flowchart LR"]
+        risk_configs = {
+            "critical": "fill:#dc3545,stroke:#721c24,stroke-width:2px,color:#ffffff",
+            "high": "fill:#fd7e14,stroke:#856404,stroke-width:2px,color:#ffffff",
+            "medium": "fill:#ffc107,stroke:#856404,stroke-width:1px,color:#333333",
+            "low": "fill:#28a745,stroke:#155724,stroke-width:1px,color:#ffffff",
+            "info": "fill:#17a2b8,stroke:#0c5460,stroke-width:1px,color:#ffffff"
+        }
         
-        # Build nodes with tooltips
+        for risk, config in risk_configs.items():
+            lines.append(f"    classDef {risk} {config};")
+        
+        # Apply classes to nodes
+        risk_classes = {"critical": [], "high": [], "medium": [], "low": [], "info": []}
         for node_id, node in self.graph.nodes.items():
             mermaid_id = self.node_ids[node_id]
-            label, color = self._get_node_style(node)
-            tooltip = f"Component: {node.name}\\nType: {node.type.value}\\nExported: {node.exported}"
-            if node.permission:
-                tooltip += f"\\nPermission: {node.permission}"
-            lines.append(f'    {mermaid_id}{label} click {mermaid_id} call showTooltip("{tooltip}")')
+            risk = node.risk_level.value
+            if risk in risk_classes:
+                risk_classes[risk].append(mermaid_id)
         
-        # Build edges
-        for edge in self.graph.edges:
-            lines.append(self._build_edge_definition(edge))
+        for risk, node_list in risk_classes.items():
+            if node_list:
+                lines.append(f"    class {','.join(node_list)} {risk};")
         
-        lines.append("```")
         return "\n".join(lines)

@@ -1,0 +1,83 @@
+{
+  "nodes": [
+    {
+      "id": "main",
+      "name": "MainActivity",
+      "type": "activity",
+      "exported": true,
+      "permission": null,
+      "risk_level": "high",
+      "metadata": {}
+    },
+    {
+      "id": "auth",
+      "name": "AuthService",
+      "type": "service",
+      "exported": true,
+      "permission": "android.permission.AUTH",
+      "risk_level": "medium",
+      "metadata": {}
+    },
+    {
+      "id": "data",
+      "name": "DataProvider",
+      "type": "provider",
+      "exported": true,
+      "permission": null,
+      "risk_level": "critical",
+      "metadata": {}
+    },
+    {
+      "id": "internal",
+      "name": "InternalHelper",
+      "type": "activity",
+      "exported": false,
+      "permission": null,
+      "risk_level": "low",
+      "metadata": {}
+    },
+    {
+      "id": "broadcast",
+      "name": "NetworkReceiver",
+      "type": "receiver",
+      "exported": true,
+      "permission": null,
+      "risk_level": "high",
+      "metadata": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "main",
+      "target": "auth",
+      "type": "intent",
+      "label": "start_auth",
+      "metadata": {}
+    },
+    {
+      "id": "e2",
+      "source": "main",
+      "target": "data",
+      "type": "intent",
+      "label": "query_data",
+      "metadata": {}
+    },
+    {
+      "id": "e3",
+      "source": "auth",
+      "target": "data",
+      "type": "permission",
+      "label": "requires_permission",
+      "metadata": {}
+    },
+    {
+      "id": "e4",
+      "source": "broadcast",
+      "target": "main",
+      "type": "intent",
+      "label": "on_network_change",
+      "metadata": {}
+    }
+  ]
+}

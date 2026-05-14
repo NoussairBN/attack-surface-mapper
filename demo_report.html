@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attack Surface Report - Unknown App</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .risk-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .risk-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .risk-critical { color: #dc3545; }
+        .risk-high { color: #fd7e14; }
+        .risk-medium { color: #ffc107; }
+        .risk-low { color: #28a745; }
+        
+        .component-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .component-table th,
+        .component-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .component-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .component-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-critical { background: #dc3545; color: white; }
+        .badge-high { background: #fd7e14; color: white; }
+        .badge-medium { background: #ffc107; color: #333; }
+        .badge-low { background: #28a745; color: white; }
+        .badge-info { background: #17a2b8; color: white; }
+        
+        .badge-exported {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .graph-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .mermaid {
+            text-align: center;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        .recommendations {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Attack Surface Report</h1>
+            <div class="subtitle">
+                <strong>Package:</strong> Unknown |
+                <strong>Generated:</strong> 2026-05-14 15:39:32
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Total Components</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Connections</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Critical Risks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Exported Components</div>
+            </div>
+        </div>
+        
+        <div class="risk-section">
+            <div class="risk-header">📋 Component Analysis</div>
+            <table class="component-table">
+                <thead>
+                    <tr>
+                        <th>Component Name</th>
+                        <th>Type</th>
+                        <th>Exported</th>
+                        <th>Permission</th>
+                        <th>Risk Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><code>MainActivity</code></td>
+                <td>activity</td>
+                <td><span class="badge badge-exported">🔓 Exported</span></td>
+                <td>None</td>
+                <td><span class="badge badge-high">HIGH</span></td>
+            </tr>
+            <tr>
+                <td><code>AuthService</code></td>
+                <td>service</td>
+                <td><span class="badge badge-exported">🔓 Exported</span></td>
+                <td>android.permission.AUTH</td>
+                <td><span class="badge badge-medium">MEDIUM</span></td>
+            </tr>
+            <tr>
+                <td><code>DataProvider</code></td>
+                <td>provider</td>
+                <td><span class="badge badge-exported">🔓 Exported</span></td>
+                <td>None</td>
+                <td><span class="badge badge-critical">CRITICAL</span></td>
+            </tr>
+            <tr>
+                <td><code>InternalHelper</code></td>
+                <td>activity</td>
+                <td><span class="badge badge-info">🔒 Internal</span></td>
+                <td>None</td>
+                <td><span class="badge badge-low">LOW</span></td>
+            </tr>
+            <tr>
+                <td><code>NetworkReceiver</code></td>
+                <td>receiver</td>
+                <td><span class="badge badge-exported">🔓 Exported</span></td>
+                <td>None</td>
+                <td><span class="badge badge-high">HIGH</span></td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="graph-container"><div class="risk-header">🔄 Attack Surface Graph</div><div class="mermaid">```mermaid
+flowchart LR
+    subgraph InternalComponents[Internal Components]
+    N3([InternalHelper])
+    end
+    subgraph ExportedComponents[🔓 Exported Components]
+    N0([MainActivity 🔓])
+    N1{{AuthService 🔓}}
+    N2[(DataProvider 🔓)]
+    N4((NetworkReceiver 🔓))
+    end
+
+    N0 -->|start_auth| N1
+    N0 -->|query_data| N2
+    N1 -.->|requires_permission| N2
+    N4 -->|on_network_change| N0
+    classDef highNode fill:#ffe6cc,stroke:#ff6600,stroke-width:2px;
+    class N0,N4 highNode;
+    classDef mediumNode fill:#ffffcc,stroke:#ccaa00,stroke-width:2px;
+    class N1 mediumNode;
+    classDef criticalNode fill:#ffcccc,stroke:#cc0000,stroke-width:3px;
+    class N2 criticalNode;
+    classDef lowNode fill:#ccffcc,stroke:#00aa00,stroke-width:1px;
+    class N3 lowNode;
+```</div></div>
+        
+        <div class="risk-section">
+            <div class="risk-header">💡 Security Recommendations</div>
+            <ul><li>⚠️ Found 1 critical risk components that require immediate attention.</li><li>🔓 4 components are exported. Review if each truly needs to be accessible externally.</li><li>🔐 3 exported components have no permission protection. Consider adding android:permission attributes.</li><li>✅ Run complete penetration testing on all exported components</li><li>✅ Implement certificate pinning for network communications</li><li>✅ Enable ProGuard/R8 obfuscation for production builds</li><li>✅ Regularly update dependencies and fix security patches</li></ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                'background': '#ffffff',
+                'primaryColor': '#667eea',
+                'primaryBorderColor': '#764ba2',
+                'lineColor': '#999999',
+                'secondaryColor': '#f0f0f0',
+                'tertiaryColor': '#fafafa'
+            }
+        });
+        
+        function showTooltip(message) {
+            // Tooltip functionality can be added here
+            console.log(message);
+        }
+    </script>
+</body>
+</html>
