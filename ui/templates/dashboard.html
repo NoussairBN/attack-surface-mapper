@@ -14,19 +14,20 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #0a0c10;
-  color: #e8eaf0;
+  background: #f5f7fa;
+  color: #1a202c;
 }
 
 /* Sidebar */
 .sidebar {
   width: 240px;
-  background: #0f1117;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
   position: fixed;
   height: 100vh;
   padding: 24px 16px;
   z-index: 100;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
 .logo {
@@ -46,16 +47,19 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  color: #fff;
+  font-weight: bold;
 }
 
 .logo-text {
   font-weight: 600;
   font-size: 14px;
+  color: #1a202c;
 }
 
 .logo-sub {
   font-size: 10px;
-  color: #6b7280;
+  color: #718096;
 }
 
 .nav-item {
@@ -63,19 +67,20 @@ body {
   margin: 4px 0;
   border-radius: 8px;
   cursor: pointer;
-  color: #9ca3af;
+  color: #4a5568;
   font-size: 14px;
   transition: all 0.2s;
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.05);
-  color: #fff;
+  background: #f7fafc;
+  color: #1a202c;
 }
 
 .nav-item.active {
-  background: rgba(0,220,130,0.1);
+  background: #e6fffa;
   color: #00dc82;
+  font-weight: 500;
 }
 
 /* Main content */
@@ -91,11 +96,12 @@ body {
 
 .header h1 {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
+  color: #1a202c;
 }
 
 .header p {
-  color: #6b7280;
+  color: #718096;
   font-size: 13px;
   margin-top: 4px;
 }
@@ -109,18 +115,26 @@ body {
 }
 
 .stat-card {
-  background: #13161e;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 18px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
 }
 
 .stat-label {
   font-size: 11px;
   text-transform: uppercase;
-  color: #6b7280;
+  color: #718096;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .stat-value {
@@ -128,23 +142,24 @@ body {
   font-weight: 700;
 }
 
-.stat-card.critical .stat-value { color: #ef4444; }
-.stat-card.high .stat-value { color: #f97316; }
-.stat-card.info .stat-value { color: #3b82f6; }
+.stat-card.critical .stat-value { color: #e53e3e; }
+.stat-card.high .stat-value { color: #ed8936; }
+.stat-card.info .stat-value { color: #3182ce; }
 
 .stat-sub {
   font-size: 10px;
-  color: #6b7280;
+  color: #a0aec0;
   margin-top: 6px;
 }
 
 /* Panels */
 .panel {
-  background: #13161e;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
   display: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .panel.active {
@@ -153,23 +168,25 @@ body {
 
 .panel-header {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fafbfc;
 }
 
 .panel-title {
   font-size: 13px;
   font-weight: 600;
+  color: #2d3748;
 }
 
 .panel-badge {
   font-size: 11px;
-  background: rgba(255,255,255,0.05);
+  background: #edf2f7;
   padding: 3px 8px;
   border-radius: 6px;
-  color: #9ca3af;
+  color: #4a5568;
 }
 
 .panel-content {
@@ -184,35 +201,42 @@ table {
 
 th {
   text-align: left;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 11px;
-  color: #6b7280;
-  font-weight: 500;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #718096;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fafbfc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 td {
   padding: 10px 12px;
   font-size: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid #edf2f7;
 }
 
 tr:last-child td {
   border-bottom: none;
 }
 
+tr:hover td {
+  background: #f7fafc;
+}
+
 .type-badge {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
   font-size: 10px;
   font-weight: 600;
 }
 
-.type-Activity { background: rgba(59,130,246,0.15); color: #3b82f6; }
-.type-Service { background: rgba(16,185,129,0.15); color: #10b981; }
-.type-Provider { background: rgba(139,92,246,0.15); color: #8b5cf6; }
-.type-Receiver { background: rgba(236,72,153,0.15); color: #ec4899; }
+.type-Activity { background: #bee3f8; color: #2c5282; }
+.type-Service { background: #c6f6d5; color: #22543d; }
+.type-Provider { background: #e9d8fd; color: #553c9a; }
+.type-Receiver { background: #fed7e2; color: #97266d; }
 
 .risk-badge {
   display: inline-block;
@@ -223,13 +247,13 @@ tr:last-child td {
   text-transform: uppercase;
 }
 
-.risk-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
-.risk-high { background: rgba(249,115,22,0.15); color: #f97316; }
-.risk-medium { background: rgba(234,179,8,0.15); color: #eab308; }
-.risk-low { background: rgba(34,197,94,0.15); color: #22c55e; }
+.risk-critical { background: #fed7d7; color: #c53030; }
+.risk-high { background: #feebc8; color: #c05621; }
+.risk-medium { background: #fefcbf; color: #975a16; }
+.risk-low { background: #c6f6d5; color: #276749; }
 
-.exported-yes { color: #f97316; }
-.exported-no { color: #6b7280; }
+.exported-yes { color: #ed8936; font-weight: 600; }
+.exported-no { color: #a0aec0; }
 
 /* Attack paths */
 .path-list {
@@ -243,8 +267,9 @@ tr:last-child td {
   align-items: center;
   gap: 10px;
   padding: 8px;
-  background: rgba(255,255,255,0.02);
+  background: #f7fafc;
   border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .path-src, .path-dst {
@@ -252,21 +277,22 @@ tr:last-child td {
   border-radius: 6px;
   font-size: 11px;
   font-family: monospace;
+  font-weight: 500;
 }
 
 .path-src {
-  background: rgba(59,130,246,0.15);
-  color: #3b82f6;
+  background: #bee3f8;
+  color: #2c5282;
 }
 
 .path-dst {
-  background: rgba(16,185,129,0.15);
-  color: #10b981;
+  background: #c6f6d5;
+  color: #22543d;
 }
 
 .path-dst.critical {
-  background: rgba(239,68,68,0.15);
-  color: #ef4444;
+  background: #fed7d7;
+  color: #c53030;
 }
 
 .path-arrow {
@@ -279,12 +305,12 @@ tr:last-child td {
 .path-line {
   flex: 1;
   height: 1px;
-  background: rgba(255,255,255,0.1);
+  background: #cbd5e0;
 }
 
 .path-label {
   font-size: 9px;
-  color: #6b7280;
+  color: #718096;
   font-family: monospace;
 }
 
@@ -297,24 +323,27 @@ tr:last-child td {
 
 .rec-item {
   padding: 12px;
-  background: rgba(255,255,255,0.02);
+  background: #f7fafc;
   border-radius: 8px;
   border-left: 3px solid;
+  border: 1px solid #e2e8f0;
+  border-left-width: 3px;
 }
 
-.rec-critical { border-left-color: #ef4444; }
-.rec-high { border-left-color: #f97316; }
-.rec-medium { border-left-color: #eab308; }
+.rec-critical { border-left-color: #e53e3e; }
+.rec-high { border-left-color: #ed8936; }
+.rec-medium { border-left-color: #ecc94b; }
 
 .rec-title {
   font-size: 12px;
   font-weight: 600;
+  color: #2d3748;
   margin-bottom: 4px;
 }
 
 .rec-desc {
   font-size: 11px;
-  color: #9ca3af;
+  color: #718096;
 }
 
 .rec-tags {
@@ -327,9 +356,9 @@ tr:last-child td {
 .rec-tag {
   font-size: 9px;
   padding: 2px 6px;
-  background: rgba(255,255,255,0.05);
+  background: #edf2f7;
   border-radius: 4px;
-  color: #6b7280;
+  color: #4a5568;
   font-family: monospace;
 }
 
@@ -356,18 +385,19 @@ tr:last-child td {
 
 .timeline-time {
   font-size: 10px;
-  color: #6b7280;
+  color: #718096;
   font-family: monospace;
   margin-bottom: 2px;
 }
 
 .timeline-msg {
   font-size: 11px;
-  color: #9ca3af;
+  color: #4a5568;
 }
 
 .timeline-msg strong {
-  color: #e8eaf0;
+  color: #2d3748;
+  font-weight: 600;
 }
 
 /* Chart */
@@ -397,7 +427,7 @@ tr:last-child td {
 
 .gauge-bg {
   fill: none;
-  stroke: rgba(255,255,255,0.08);
+  stroke: #e2e8f0;
   stroke-width: 10;
 }
 
@@ -418,11 +448,12 @@ tr:last-child td {
 .gauge-value {
   font-size: 28px;
   font-weight: 700;
+  color: #2d3748;
 }
 
 .gauge-label {
   font-size: 10px;
-  color: #6b7280;
+  color: #718096;
 }
 
 .risk-level {
@@ -434,7 +465,7 @@ tr:last-child td {
   margin-top: 12px;
 }
 
-.risk-high { background: rgba(249,115,22,0.15); color: #f97316; }
+.risk-high { background: #feebc8; color: #c05621; }
 
 .gauge-stats {
   display: grid;
@@ -445,6 +476,9 @@ tr:last-child td {
 
 .gauge-stat {
   text-align: center;
+  background: #f7fafc;
+  padding: 8px;
+  border-radius: 8px;
 }
 
 .gauge-stat-value {
@@ -454,23 +488,29 @@ tr:last-child td {
 
 .gauge-stat-label {
   font-size: 9px;
-  color: #6b7280;
+  color: #718096;
   text-transform: uppercase;
+  margin-top: 4px;
 }
 
 /* Scroll */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f1f1;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 </style>
 </head>
@@ -480,11 +520,11 @@ tr:last-child td {
   <div class="logo">
     <div class="logo-icon">AS</div>
     <div>
-      <div class="logo-text">AttackSurf</div>
+      <div class="logo-text">Attack Surface Maper</div>
       <div class="logo-sub">Security Monitor</div>
     </div>
   </div>
-  <div class="nav-item" data-tab="dashboard">Dashboard</div>
+  <div class="nav-item active" data-tab="dashboard">Dashboard</div>
   <div class="nav-item" data-tab="components">Components</div>
   <div class="nav-item" data-tab="graph">Attack Graph</div>
   <div class="nav-item" data-tab="recommendations">Recommendations</div>
@@ -496,7 +536,6 @@ tr:last-child td {
     <p>com.example.targetapp · Last scan: 2 min ago</p>
   </div>
 
-  <!-- Stats (visible on all tabs) -->
   <div class="stats">
     <div class="stat-card critical">
       <div class="stat-label">Total Components</div>
@@ -520,7 +559,6 @@ tr:last-child td {
     </div>
   </div>
 
-  <!-- Tab: Dashboard -->
   <div id="tab-dashboard" class="panel active">
     <div class="panel-header">
       <span class="panel-title">Risk Distribution</span>
@@ -533,7 +571,6 @@ tr:last-child td {
     </div>
   </div>
 
-  <!-- Tab: Components -->
   <div id="tab-components" class="panel">
     <div class="panel-header">
       <span class="panel-title">Component Inventory</span>
@@ -549,7 +586,6 @@ tr:last-child td {
     </div>
   </div>
 
-  <!-- Tab: Attack Graph -->
   <div id="tab-graph" class="panel">
     <div class="panel-header">
       <span class="panel-title">Attack Paths</span>
@@ -560,7 +596,6 @@ tr:last-child td {
     </div>
   </div>
 
-  <!-- Tab: Recommendations -->
   <div id="tab-recommendations" class="panel">
     <div class="panel-header">
       <span class="panel-title">Security Recommendations</span>
@@ -573,7 +608,6 @@ tr:last-child td {
 </div>
 
 <script>
-// ========== DATA ==========
 const componentsData = [
   {name:'MainActivity', type:'Activity', exported:true, risk:'high'},
   {name:'AuthService', type:'Service', exported:true, risk:'medium'},
@@ -609,7 +643,7 @@ const recommendationsData = [
   {severity:'medium', title:'Enforce signature-level permission', desc:'BackupAgent can be bound by any app', tags:['service','permission']}
 ];
 
-// ========== POPULATE COMPONENTS TABLE ==========
+// Populate components table
 const tbodyEl = document.getElementById('tableBody');
 componentsData.forEach(c => {
   const row = tbodyEl.insertRow();
@@ -619,7 +653,7 @@ componentsData.forEach(c => {
   row.insertCell(3).innerHTML = `<span class="risk-badge risk-${c.risk}">${c.risk}</span>`;
 });
 
-// ========== POPULATE ATTACK PATHS ==========
+// Populate attack paths
 const pathList = document.getElementById('pathList');
 attackPathsData.forEach(p => {
   const div = document.createElement('div');
@@ -635,7 +669,7 @@ attackPathsData.forEach(p => {
   pathList.appendChild(div);
 });
 
-// ========== POPULATE RECOMMENDATIONS ==========
+// Populate recommendations
 const recList = document.getElementById('recList');
 recommendationsData.forEach(r => {
   const div = document.createElement('div');
@@ -648,34 +682,34 @@ recommendationsData.forEach(r => {
   recList.appendChild(div);
 });
 
-// ========== CHART ==========
+// Chart
 new Chart(document.getElementById('riskChart'), {
   type: 'bar',
   data: {
     labels: ['Activities', 'Services', 'Providers', 'Receivers'],
     datasets: [
-      { label: 'Critical', data: [1, 0, 1, 1], backgroundColor: '#ef4444', borderRadius: 4, stack: 's' },
-      { label: 'High', data: [2, 3, 1, 0], backgroundColor: '#f97316', borderRadius: 4, stack: 's' },
-      { label: 'Medium', data: [1, 1, 1, 1], backgroundColor: '#eab308', borderRadius: 4, stack: 's' },
-      { label: 'Low', data: [2, 1, 0, 0], backgroundColor: '#22c55e', borderRadius: 4, stack: 's' }
+      { label: 'Critical', data: [1, 0, 1, 1], backgroundColor: '#e53e3e', borderRadius: 4, stack: 's' },
+      { label: 'High', data: [2, 3, 1, 0], backgroundColor: '#ed8936', borderRadius: 4, stack: 's' },
+      { label: 'Medium', data: [1, 1, 1, 1], backgroundColor: '#ecc94b', borderRadius: 4, stack: 's' },
+      { label: 'Low', data: [2, 1, 0, 0], backgroundColor: '#48bb78', borderRadius: 4, stack: 's' }
     ]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a1e28', titleColor: '#fff', bodyColor: '#9ca3af' } },
-    scales: { x: { stacked: true, ticks: { color: '#6b7280' }, grid: { display: false } }, y: { stacked: true, ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' } } }
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#fff', titleColor: '#1a202c', bodyColor: '#4a5568', borderColor: '#e2e8f0', borderWidth: 1 } },
+    scales: { x: { stacked: true, ticks: { color: '#4a5568' }, grid: { display: false } }, y: { stacked: true, ticks: { color: '#4a5568' }, grid: { color: '#e2e8f0' } } }
   }
 });
 
-// ========== UPDATE COUNTS ==========
+// Update counts
 document.getElementById('statTotal').innerText = componentsData.length;
 document.getElementById('statCritical').innerText = componentsData.filter(c => c.risk === 'critical').length;
 document.getElementById('statExported').innerText = componentsData.filter(c => c.exported).length;
 document.getElementById('tableCount').innerText = componentsData.length + ' total';
 document.getElementById('recCount').innerText = recommendationsData.length + ' issues';
 
-// ========== TAB NAVIGATION ==========
+// Tab navigation
 const tabs = {
   dashboard: document.getElementById('tab-dashboard'),
   components: document.getElementById('tab-components'),
@@ -688,12 +722,8 @@ const navItems = document.querySelectorAll('.nav-item');
 navItems.forEach(item => {
   item.addEventListener('click', () => {
     const tabName = item.getAttribute('data-tab');
-    
-    // Update active class on nav items
     navItems.forEach(nav => nav.classList.remove('active'));
     item.classList.add('active');
-    
-    // Update active panel
     Object.keys(tabs).forEach(key => {
       tabs[key].classList.remove('active');
     });
