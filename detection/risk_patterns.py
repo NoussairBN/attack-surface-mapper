@@ -91,7 +91,9 @@ def check_implicit_intent_sensitive(component: AndroidComponent) -> List[Finding
 
 def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     """Point d'entrée principal de l'analyse P2."""
-    from detection.fileprovider_checker import check_fileprovider_exported
+    
+    # IMPORT IMPORTANT : On importe les DEUX fonctions de vérification des FileProviders ici
+    from detection.fileprovider_checker import check_fileprovider_exported, check_fileprovider_config
     from detection.permission_analyzer import analyze_permissions
 
     all_findings = []
@@ -119,8 +121,10 @@ def analyze_all_components(manifest: AppManifest) -> List[Finding]:
     # 3. Analyse spécifique des Providers
     for provider in manifest.providers:
         all_findings.extend(check_fileprovider_exported(provider))
+        # C'EST ICI QU'ON AJOUTE L'APPEL À LA NOUVELLE FONCTION :
+        all_findings.extend(check_fileprovider_config(provider)) 
 
-    # 4. Matrice des permissions globales (NOUVEAU)
+    # 4. Matrice des permissions globales
     all_findings.extend(analyze_permissions(manifest))
 
     return all_findings

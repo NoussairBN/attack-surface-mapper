@@ -74,6 +74,22 @@ PATTERNS: Dict[str, RiskPattern] = {
         cwe         = "CWE-862",
         owasp       = "M6"
     ),
+    "FILEPROVIDER_URI_PERM_MISSING": RiskPattern(
+        id          = "FILEPROVIDER_URI_PERM_MISSING",
+        name        = "FileProvider sans grantUriPermissions",
+        description = "Un FileProvider doit définir android:grantUriPermissions='true' pour limiter l'accès aux fichiers partagés. Son absence indique une mauvaise configuration de sécurité.",
+        severity    = RiskLevel.HIGH,
+        cwe         = "CWE-276",
+        owasp       = "M2"
+    ),
+    "FILEPROVIDER_MISSING_METADATA": RiskPattern(
+        id          = "FILEPROVIDER_MISSING_METADATA",
+        name        = "FileProvider sans fichier de configuration",
+        description = "Le FileProvider ne déclare pas de balise <meta-data> pour spécifier les chemins partagés. C'est une anomalie de conception.",
+        severity    = RiskLevel.MEDIUM,
+        cwe         = "CWE-16",
+        owasp       = "M5"
+    ),
 }
 
 def get_pattern(pattern_id: str) -> RiskPattern:

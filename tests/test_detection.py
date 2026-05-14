@@ -77,3 +77,18 @@ def test_dangerous_perm_missing_detected():
     assert len(findings) == 1
     assert findings[0].pattern_id == "DANGEROUS_PERM_MISSING"
     assert findings[0].severity.value == "high"
+from detection.fileprovider_checker import check_fileprovider_config
+
+def test_fileprovider_missing_config_detected():
+    """Vérifie qu'un FileProvider mal configuré lève les alertes adéquates."""
+    # FileProvider sans grant_uri_permissions et sans meta_data
+    provider = Provider(
+        name="BadProvider", component_type="provider", 
+        is_file_provider=True, grant_uri_permissions=False, meta_data=[]
+    )
+    
+    findings = check_fileprovider_config(provider)
+    
+    assert len(findings) == 2
+    assert findings[0].pattern_id == "FILEPROVIDER_URI_PERM_MISSING"
+    assert findings[1].pattern_id == "FILEPROVIDER_MISSING_METADATA"

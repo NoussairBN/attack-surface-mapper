@@ -23,3 +23,37 @@ def check_fileprovider_exported(provider: Provider) -> List[Finding]:
         ))
         
     return findings
+def check_fileprovider_config(provider: Provider) -> List[Finding]:
+    """Vérifie la configuration interne obligatoire d'un FileProvider."""
+    findings = []
+    
+    if not provider.is_file_provider:
+        return findings
+
+    # 1. Vérification du grantUriPermissions
+    if not provider.grant_uri_permissions:
+        pattern = PATTERNS["FILEPROVIDER_URI_PERM_MISSING"]
+        findings.append(Finding(
+            pattern_id=pattern.id, component_name=provider.name, component_type="provider",
+            severity=pattern.severity, cwe=pattern.cwe,
+            detail=f"Le FileProvider '{provider.name}' ne définit pas grantUriPermissions='true'. L'accès sécurisé par URI ne fonctionnera pas.",
+            evidence={"grant_uri_permissions": False}
+        ))
+
+    # 2. Vérification de la présence de la balise meta-data
+    has_paths_meta = False
+    for meta in provider.meta_data:
+        if meta.name in ["android.support.FILE_PROVIDER_PATHS", "androidx.core.content.FILE_PROVIDER_PATHS"]:
+            has_paths_meta = True
+            break
+
+    if not has_paths_meta:
+        pattern = PATTERNS["FILEPROVIDER_MISSING_METADATA"]
+        findings.append(Finding(
+            pattern_id=pattern.id, component_name=provider.name, component_type="provider",
+            severity=pattern.severity, cwe=pattern.cwe,
+            detail=f"Le FileProvider '{provider.name}' ne déclare pas la balise <meta-data> pointant vers le XML des chemins. Configuration invalide.",
+            evidence={"meta_data_count": len(provider.meta_data)}
+        ))
+
+    return findings
