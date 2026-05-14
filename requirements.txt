@@ -1,0 +1,4 @@
+dataclasses-json
+lxml
+lxml-stubs
+pytest
