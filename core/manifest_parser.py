@@ -1,7 +1,7 @@
 from lxml import etree
 from typing import Optional
 from .component_model import (
-    AppManifest, Activity, Service, Receiver, Provider
+    AppManifest, Activity, Service, Receiver, Provider, MetaData
 )
 from .intent_filter_parser import parse_intent_filters
 
@@ -13,6 +13,14 @@ def _attr(el, name: str, default: str = "") -> str:
 def _bool_attr(el, name: str, default: bool = False) -> bool:
     v = _attr(el, name, str(default)).lower()
     return v == "true"
+
+
+def _parse_meta_data(el) -> MetaData:
+    return MetaData(
+        name=_attr(el, "name") or "",
+        resource=_attr(el, "resource") or None,
+        value=_attr(el, "value") or None,
+    )
 
 def _exported(el, has_intent_filters: bool) -> Optional[bool]:
     """
@@ -76,6 +84,7 @@ def _parse_provider(el) -> Provider:
         write_permission  = _attr(el, "writePermission") or None,
         grant_uri_permissions = _bool_attr(el, "grantUriPermissions"),
         is_file_provider  = "FileProvider" in name,
+        meta_data         = [_parse_meta_data(e) for e in el.findall("meta-data")],
     )
 
 def parse_manifest(manifest_path: str) -> AppManifest:
@@ -96,6 +105,9 @@ def parse_manifest(manifest_path: str) -> AppManifest:
         allow_backup       = _bool_attr(app, "allowBackup", True),
         network_security_config = _attr(app, "networkSecurityConfig") or None,
     )
+    manifest.uses_permissions = [
+        _attr(e, "name") for e in root.findall("uses-permission") if _attr(e, "name")
+    ]
     if app is not None:
         manifest.activities = [_parse_activity(e) for e in app.findall("activity")]
         manifest.services   = [_parse_service(e)  for e in app.findall("service")]
