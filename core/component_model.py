@@ -46,12 +46,21 @@ class Receiver(AndroidComponent):
 # ── ContentProvider ────────────────────────────────
 @dataclass_json
 @dataclass
+class MetaData:
+    name: str = ""
+    resource: Optional[str] = None
+    value: Optional[str] = None
+
+
+@dataclass_json
+@dataclass
 class Provider(AndroidComponent):
     authorities:    Optional[str] = None
     read_permission:  Optional[str] = None
     write_permission: Optional[str] = None
     grant_uri_permissions: bool = False
     is_file_provider: bool = False
+    meta_data: List[MetaData] = field(default_factory=list)
 
 # ── Application (manifest global) ──────────────────
 @dataclass_json
@@ -63,6 +72,7 @@ class AppManifest:
     debuggable:   bool = False
     allow_backup: bool = True    # défaut Android = True → risqué
     network_security_config: Optional[str] = None
+    uses_permissions: List[str] = field(default_factory=list)
     activities:  List[Activity] = field(default_factory=list)
     services:    List[Service]  = field(default_factory=list)
     receivers:   List[Receiver] = field(default_factory=list)
