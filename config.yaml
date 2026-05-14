@@ -1,0 +1,40 @@
+# Attack Surface Mapper Configuration
+
+# Risk scoring thresholds
+risk_scoring:
+  critical_threshold: 80
+  high_threshold: 60
+  medium_threshold: 40
+  low_threshold: 20
+  
+  weights:
+    exported_component: 30
+    missing_permission: 25
+    allow_backup: 15
+    debuggable: 10
+    intent_filters: 20
+
+# Graph visualization settings
+graph:
+  default_layout: "LR"  # LR, TB, TD
+  max_nodes_detailed: 30
+  cluster_exported: true
+  show_permissions: true
+  
+# Report settings
+report:
+  template: "report.html.jinja"
+  include_recommendations: true
+  include_graph: true
+  
+# Security patterns
+risk_patterns:
+  - id: "EXPORTED_NO_PERMISSION"
+    severity: "CRITICAL"
+    cwe: "CWE-926"
+  - id: "ALLOW_BACKUP_TRUE"
+    severity: "MEDIUM"
+    cwe: "CWE-312"
+  - id: "DEBUGGABLE_TRUE"
+    severity: "HIGH"
+    cwe: "CWE-215"

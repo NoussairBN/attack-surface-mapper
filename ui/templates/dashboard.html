@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attack Surface Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fa;
+  color: #1a202c;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  position: fixed;
+  height: 100vh;
+  padding: 24px 16px;
+  z-index: 100;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 0 8px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #00dc82;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.logo-text {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a202c;
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: #718096;
+}
+
+.nav-item {
+  padding: 10px 12px;
+  margin: 4px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #4a5568;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.nav-item:hover {
+  background: #f7fafc;
+  color: #1a202c;
+}
+
+.nav-item.active {
+  background: #e6fffa;
+  color: #00dc82;
+  font-weight: 500;
+}
+
+/* Main content */
+.main {
+  margin-left: 240px;
+  padding: 24px 28px;
+}
+
+/* Header */
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.header p {
+  color: #718096;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* Stats cards */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #718096;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.stat-card.critical .stat-value { color: #e53e3e; }
+.stat-card.high .stat-value { color: #ed8936; }
+.stat-card.info .stat-value { color: #3182ce; }
+
+.stat-sub {
+  font-size: 10px;
+  color: #a0aec0;
+  margin-top: 6px;
+}
+
+/* Panels */
+.panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.panel.active {
+  display: block;
+}
+
+.panel-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafbfc;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.panel-badge {
+  font-size: 11px;
+  background: #edf2f7;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: #4a5568;
+}
+
+.panel-content {
+  padding: 16px;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 12px 12px;
+  font-size: 11px;
+  color: #718096;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fafbfc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 10px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: #f7fafc;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.type-Activity { background: #bee3f8; color: #2c5282; }
+.type-Service { background: #c6f6d5; color: #22543d; }
+.type-Provider { background: #e9d8fd; color: #553c9a; }
+.type-Receiver { background: #fed7e2; color: #97266d; }
+
+.risk-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.risk-critical { background: #fed7d7; color: #c53030; }
+.risk-high { background: #feebc8; color: #c05621; }
+.risk-medium { background: #fefcbf; color: #975a16; }
+.risk-low { background: #c6f6d5; color: #276749; }
+
+.exported-yes { color: #ed8936; font-weight: 600; }
+.exported-no { color: #a0aec0; }
+
+/* Attack paths */
+.path-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.path-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.path-src, .path-dst {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.path-src {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.path-dst {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.path-dst.critical {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.path-arrow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.path-line {
+  flex: 1;
+  height: 1px;
+  background: #cbd5e0;
+}
+
+.path-label {
+  font-size: 9px;
+  color: #718096;
+  font-family: monospace;
+}
+
+/* Recommendations */
+.rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rec-item {
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border-left: 3px solid;
+  border: 1px solid #e2e8f0;
+  border-left-width: 3px;
+}
+
+.rec-critical { border-left-color: #e53e3e; }
+.rec-high { border-left-color: #ed8936; }
+.rec-medium { border-left-color: #ecc94b; }
+
+.rec-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.rec-desc {
+  font-size: 11px;
+  color: #718096;
+}
+
+.rec-tags {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rec-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: #edf2f7;
+  border-radius: 4px;
+  color: #4a5568;
+  font-family: monospace;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.timeline-time {
+  font-size: 10px;
+  color: #718096;
+  font-family: monospace;
+  margin-bottom: 2px;
+}
+
+.timeline-msg {
+  font-size: 11px;
+  color: #4a5568;
+}
+
+.timeline-msg strong {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Chart */
+.chart-wrap {
+  height: 200px;
+  position: relative;
+}
+
+/* Gauge */
+.gauge {
+  text-align: center;
+  padding: 10px;
+}
+
+.gauge-circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gauge-bg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 10;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.gauge-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.gauge-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.gauge-label {
+  font-size: 10px;
+  color: #718096;
+}
+
+.risk-level {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.risk-high { background: #feebc8; color: #c05621; }
+
+.gauge-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.gauge-stat {
+  text-align: center;
+  background: #f7fafc;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.gauge-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.gauge-stat-label {
+  font-size: 9px;
+  color: #718096;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Scroll */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">AS</div>
+    <div>
+      <div class="logo-text">Attack Surface Maper</div>
+      <div class="logo-sub">Security Monitor</div>
+    </div>
+  </div>
+  <div class="nav-item active" data-tab="dashboard">Dashboard</div>
+  <div class="nav-item" data-tab="components">Components</div>
+  <div class="nav-item" data-tab="graph">Attack Graph</div>
+  <div class="nav-item" data-tab="recommendations">Recommendations</div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1>Security Dashboard</h1>
+    <p>com.example.targetapp · Last scan: 2 min ago</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card critical">
+      <div class="stat-label">Total Components</div>
+      <div class="stat-value" id="statTotal">15</div>
+      <div class="stat-sub">Activities · Services · Providers · Receivers</div>
+    </div>
+    <div class="stat-card critical">
+      <div class="stat-label">Critical Risks</div>
+      <div class="stat-value" id="statCritical">3</div>
+      <div class="stat-sub">Need immediate attention</div>
+    </div>
+    <div class="stat-card high">
+      <div class="stat-label">Exported Surfaces</div>
+      <div class="stat-value" id="statExported">8</div>
+      <div class="stat-sub">53% of components</div>
+    </div>
+    <div class="stat-card info">
+      <div class="stat-label">Risk Score</div>
+      <div class="stat-value" id="statScore">72</div>
+      <div class="stat-sub">/100 · High Risk</div>
+    </div>
+  </div>
+
+  <div id="tab-dashboard" class="panel active">
+    <div class="panel-header">
+      <span class="panel-title">Risk Distribution</span>
+      <span class="panel-badge">by component type</span>
+    </div>
+    <div class="panel-content">
+      <div class="chart-wrap">
+        <canvas id="riskChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-components" class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Component Inventory</span>
+      <span class="panel-badge" id="tableCount">15 total</span>
+    </div>
+    <div class="panel-content" style="padding:0; max-height:500px; overflow-y:auto">
+      <table id="componentTable">
+        <thead>
+          <tr><th>Component</th><th>Type</th><th>Exported</th><th>Risk</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-graph" class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Attack Paths</span>
+      <span class="panel-badge">IPC flows</span>
+    </div>
+    <div class="panel-content">
+      <div class="path-list" id="pathList"></div>
+    </div>
+  </div>
+
+  <div id="tab-recommendations" class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Security Recommendations</span>
+      <span class="panel-badge" id="recCount">6 issues</span>
+    </div>
+    <div class="panel-content">
+      <div class="rec-list" id="recList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const componentsData = [
+  {name:'MainActivity', type:'Activity', exported:true, risk:'high'},
+  {name:'AuthService', type:'Service', exported:true, risk:'medium'},
+  {name:'DataProvider', type:'Provider', exported:true, risk:'critical'},
+  {name:'DeepLinkActivity', type:'Activity', exported:true, risk:'critical'},
+  {name:'DebugReceiver', type:'Receiver', exported:true, risk:'critical'},
+  {name:'BackupAgent', type:'Service', exported:true, risk:'high'},
+  {name:'FileProvider', type:'Provider', exported:true, risk:'high'},
+  {name:'SyncAdapter', type:'Service', exported:true, risk:'high'},
+  {name:'SettingsActivity', type:'Activity', exported:false, risk:'medium'},
+  {name:'CrashReceiver', type:'Receiver', exported:false, risk:'medium'},
+  {name:'NetworkService', type:'Service', exported:false, risk:'medium'},
+  {name:'SplashActivity', type:'Activity', exported:false, risk:'low'},
+  {name:'CacheProvider', type:'Provider', exported:false, risk:'low'},
+  {name:'LogReceiver', type:'Receiver', exported:false, risk:'low'},
+  {name:'ProfileActivity', type:'Activity', exported:false, risk:'high'}
+];
+
+const attackPathsData = [
+  {src:'External App', label:'startActivity()', dst:'DeepLinkActivity', critical:true},
+  {src:'External App', label:'query()', dst:'DataProvider', critical:true},
+  {src:'External App', label:'sendBroadcast()', dst:'DebugReceiver', critical:true},
+  {src:'MainActivity', label:'startService()', dst:'AuthService', critical:false},
+  {src:'MainActivity', label:'bindService()', dst:'BackupAgent', critical:false},
+  {src:'AuthService', label:'query()', dst:'DataProvider', critical:true}
+];
+
+const recommendationsData = [
+  {severity:'critical', title:'Remove exported flag from DebugReceiver', desc:'Exported without permission checks', tags:['CVE-2023-21015','manifest']},
+  {severity:'critical', title:'Add permission to DataProvider', desc:'Lacks read/write permission attributes', tags:['manifest','provider']},
+  {severity:'high', title:'Restrict DeepLinkActivity intents', desc:"Doesn't validate caller origin", tags:['intent-filter','activity']},
+  {severity:'high', title:'Enable file-level encryption', desc:'FileProvider serves files without encryption', tags:['storage','crypto']},
+  {severity:'medium', title:'Enforce signature-level permission', desc:'BackupAgent can be bound by any app', tags:['service','permission']}
+];
+
+// Populate components table
+const tbodyEl = document.getElementById('tableBody');
+componentsData.forEach(c => {
+  const row = tbodyEl.insertRow();
+  row.insertCell(0).innerHTML = `<span style="font-family:monospace;font-size:11px">${c.name}</span>`;
+  row.insertCell(1).innerHTML = `<span class="type-badge type-${c.type}">${c.type}</span>`;
+  row.insertCell(2).innerHTML = `<span class="${c.exported ? 'exported-yes' : 'exported-no'}">${c.exported ? 'YES' : 'no'}</span>`;
+  row.insertCell(3).innerHTML = `<span class="risk-badge risk-${c.risk}">${c.risk}</span>`;
+});
+
+// Populate attack paths
+const pathList = document.getElementById('pathList');
+attackPathsData.forEach(p => {
+  const div = document.createElement('div');
+  div.className = 'path-item';
+  div.innerHTML = `
+    <span class="path-src">${p.src}</span>
+    <div class="path-arrow">
+      <span class="path-label">${p.label}</span>
+      <div class="path-line"></div>
+    </div>
+    <span class="path-dst ${p.critical ? 'critical' : ''}">${p.dst}</span>
+  `;
+  pathList.appendChild(div);
+});
+
+// Populate recommendations
+const recList = document.getElementById('recList');
+recommendationsData.forEach(r => {
+  const div = document.createElement('div');
+  div.className = `rec-item rec-${r.severity}`;
+  div.innerHTML = `
+    <div class="rec-title">${r.title}</div>
+    <div class="rec-desc">${r.desc}</div>
+    <div class="rec-tags">${r.tags.map(t => `<span class="rec-tag">${t}</span>`).join('')}</div>
+  `;
+  recList.appendChild(div);
+});
+
+// Chart
+new Chart(document.getElementById('riskChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Activities', 'Services', 'Providers', 'Receivers'],
+    datasets: [
+      { label: 'Critical', data: [1, 0, 1, 1], backgroundColor: '#e53e3e', borderRadius: 4, stack: 's' },
+      { label: 'High', data: [2, 3, 1, 0], backgroundColor: '#ed8936', borderRadius: 4, stack: 's' },
+      { label: 'Medium', data: [1, 1, 1, 1], backgroundColor: '#ecc94b', borderRadius: 4, stack: 's' },
+      { label: 'Low', data: [2, 1, 0, 0], backgroundColor: '#48bb78', borderRadius: 4, stack: 's' }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#fff', titleColor: '#1a202c', bodyColor: '#4a5568', borderColor: '#e2e8f0', borderWidth: 1 } },
+    scales: { x: { stacked: true, ticks: { color: '#4a5568' }, grid: { display: false } }, y: { stacked: true, ticks: { color: '#4a5568' }, grid: { color: '#e2e8f0' } } }
+  }
+});
+
+// Update counts
+document.getElementById('statTotal').innerText = componentsData.length;
+document.getElementById('statCritical').innerText = componentsData.filter(c => c.risk === 'critical').length;
+document.getElementById('statExported').innerText = componentsData.filter(c => c.exported).length;
+document.getElementById('tableCount').innerText = componentsData.length + ' total';
+document.getElementById('recCount').innerText = recommendationsData.length + ' issues';
+
+// Tab navigation
+const tabs = {
+  dashboard: document.getElementById('tab-dashboard'),
+  components: document.getElementById('tab-components'),
+  graph: document.getElementById('tab-graph'),
+  recommendations: document.getElementById('tab-recommendations')
+};
+
+const navItems = document.querySelectorAll('.nav-item');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const tabName = item.getAttribute('data-tab');
+    navItems.forEach(nav => nav.classList.remove('active'));
+    item.classList.add('active');
+    Object.keys(tabs).forEach(key => {
+      tabs[key].classList.remove('active');
+    });
+    tabs[tabName].classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

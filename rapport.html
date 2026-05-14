@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attack Surface Report - {{ manifest.get('package', 'Security Analysis') }}</title>
+    <title>Attack Surface Report - Security Analysis</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:400,500,600,700&display=swap" rel="stylesheet">
     <style>
@@ -318,28 +318,28 @@
         <div class="header">
             <h1>Attack Surface Report</h1>
             <div class="subtitle">
-                <strong>Package:</strong> {{ manifest.get('package', 'Unknown') }} |
-                <strong>Version:</strong> {{ manifest.get('version', 'Unknown') }} |
-                <strong>Generated:</strong> {{ timestamp }}
+                <strong>Package:</strong> Unknown |
+                <strong>Version:</strong> Unknown |
+                <strong>Generated:</strong> 2026-05-14 16:26:54
             </div>
         </div>
         
         <!-- Statistics Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number">{{ stats.total_nodes }}</div>
+                <div class="stat-number">5</div>
                 <div class="stat-label">Total Components</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ stats.total_edges }}</div>
+                <div class="stat-number">4</div>
                 <div class="stat-label">Connections</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ stats.nodes_by_risk.get('critical', 0) }}</div>
+                <div class="stat-number">1</div>
                 <div class="stat-label">Critical Risks</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ exported_count }}</div>
+                <div class="stat-number">4</div>
                 <div class="stat-label">Exported Components</div>
             </div>
         </div>
@@ -361,21 +361,67 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for component in components %}
+                        
                         <tr>
-                            <td><code>{{ component.name }}</code></td>
-                            <td>{{ component.type }}</td>
+                            <td><code>MainActivity</code></td>
+                            <td>activity</td>
                             <td>
-                                {% if component.exported %}
+                                
                                 <span class="badge badge-exported">🔓 Exported</span>
-                                {% else %}
-                                <span class="badge badge-internal">🔒 Internal</span>
-                                {% endif %}
+                                
                             </td>
-                            <td>{{ component.permission if component.permission else '<span style="color:#a0aec0;">None</span>'|safe }}</td>
-                            <td><span class="badge badge-{{ component.risk }}">{{ component.risk|upper }}</span></td>
+                            <td><span style="color:#a0aec0;">None</span></td>
+                            <td><span class="badge badge-high">HIGH</span></td>
                         </tr>
-                        {% endfor %}
+                        
+                        <tr>
+                            <td><code>AuthService</code></td>
+                            <td>service</td>
+                            <td>
+                                
+                                <span class="badge badge-exported">🔓 Exported</span>
+                                
+                            </td>
+                            <td>android.permission.AUTH</td>
+                            <td><span class="badge badge-medium">MEDIUM</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><code>DataProvider</code></td>
+                            <td>provider</td>
+                            <td>
+                                
+                                <span class="badge badge-exported">🔓 Exported</span>
+                                
+                            </td>
+                            <td><span style="color:#a0aec0;">None</span></td>
+                            <td><span class="badge badge-critical">CRITICAL</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><code>InternalHelper</code></td>
+                            <td>activity</td>
+                            <td>
+                                
+                                <span class="badge badge-internal">🔒 Internal</span>
+                                
+                            </td>
+                            <td><span style="color:#a0aec0;">None</span></td>
+                            <td><span class="badge badge-low">LOW</span></td>
+                        </tr>
+                        
+                        <tr>
+                            <td><code>NetworkReceiver</code></td>
+                            <td>receiver</td>
+                            <td>
+                                
+                                <span class="badge badge-exported">🔓 Exported</span>
+                                
+                            </td>
+                            <td><span style="color:#a0aec0;">None</span></td>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                        </tr>
+                        
                     </tbody>
                 </table>
             </div>
@@ -389,7 +435,38 @@
             <div class="section-content">
                 <div class="graph-container">
                     <pre class="mermaid" id="mermaid-graph" style="display: flex; justify-content: center;">
-{{ mermaid_code | safe }}
+flowchart TB
+%% Attack Surface Graph
+%% Generated by Attack Surface Mapper
+
+    subgraph InternalComponents [Internal Components]
+        direction TB
+        N3[InternalHelper]
+    end
+
+    subgraph ExportedComponents [Exported Components]
+        direction TB
+        N0[MainActivity]
+        N1{AuthService}
+        N2[DataProvider]
+        N4(NetworkReceiver)
+    end
+
+    N0 -->|start_auth| N1
+    N0 -->|query_data| N2
+    N1 -.->|requires_permission| N2
+    N4 -->|on_network_change| N0
+
+%% Risk-based styling
+    classDef critical fill:#dc3545,stroke:#721c24,stroke-width:2px,color:#ffffff;
+    classDef high fill:#fd7e14,stroke:#856404,stroke-width:2px,color:#ffffff;
+    classDef medium fill:#ffc107,stroke:#856404,stroke-width:1px,color:#333333;
+    classDef low fill:#28a745,stroke:#155724,stroke-width:1px,color:#ffffff;
+    classDef info fill:#17a2b8,stroke:#0c5460,stroke-width:1px,color:#ffffff;
+    class N2 critical;
+    class N0,N4 high;
+    class N1 medium;
+    class N3 low;
                     </pre>
                 </div>
             </div>
@@ -402,18 +479,70 @@
             </div>
             <div class="section-content">
                 <ul class="recommendations-list">
-                    {% for recommendation in recommendations %}
+                    
                     <li>
-                        {% if 'critical' in recommendation.lower() %}
+                        
                         <span class="recommendation-icon recommendation-critical">⚠️</span>
-                        {% elif 'exported' in recommendation.lower() or 'permission' in recommendation.lower() %}
-                        <span class="recommendation-icon recommendation-warning">🔓</span>
-                        {% else %}
-                        <span class="recommendation-icon recommendation-info">✅</span>
-                        {% endif %}
-                        {{ recommendation }}
+                        
+                        Found 1 critical risk components that require immediate attention.
                     </li>
-                    {% endfor %}
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-warning">🔓</span>
+                        
+                        4 components are exported. Review if each truly needs to be accessible externally.
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-warning">🔓</span>
+                        
+                        3 exported components have no permission protection. Consider adding android:permission attributes.
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-info">✅</span>
+                        
+                        2 high risk components need security review.
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-warning">🔓</span>
+                        
+                        Run complete penetration testing on all exported components
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-info">✅</span>
+                        
+                        Implement certificate pinning for network communications
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-info">✅</span>
+                        
+                        Enable ProGuard/R8 obfuscation for production builds
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-info">✅</span>
+                        
+                        Regularly update dependencies and fix security patches
+                    </li>
+                    
+                    <li>
+                        
+                        <span class="recommendation-icon recommendation-info">✅</span>
+                        
+                        Consider using androidx.security:security-crypto for data encryption
+                    </li>
+                    
                 </ul>
             </div>
         </div>

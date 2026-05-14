@@ -1,0 +1,25 @@
+```mermaid
+flowchart LR
+    subgraph InternalComponents[Internal Components]
+    N3([InternalHelper])
+    end
+    subgraph ExportedComponents[🔓 Exported Components]
+    N0([MainActivity 🔓])
+    N1{{AuthService 🔓}}
+    N2[(DataProvider 🔓)]
+    N4((NetworkReceiver 🔓))
+    end
+
+    N0 -->|start_auth| N1
+    N0 -->|query_data| N2
+    N1 -.->|requires_permission| N2
+    N4 -->|on_network_change| N0
+    classDef highNode fill:#ffe6cc,stroke:#ff6600,stroke-width:2px;
+    class N0,N4 highNode;
+    classDef mediumNode fill:#ffffcc,stroke:#ccaa00,stroke-width:2px;
+    class N1 mediumNode;
+    classDef criticalNode fill:#ffcccc,stroke:#cc0000,stroke-width:3px;
+    class N2 criticalNode;
+    classDef lowNode fill:#ccffcc,stroke:#00aa00,stroke-width:1px;
+    class N3 lowNode;
+```
