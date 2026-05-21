@@ -17,4 +17,4 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Commande par défaut pour la démo
-ENTRYPOINT ["python3", "demo.py"]
+CMD ["python", "ui_app.py"]
