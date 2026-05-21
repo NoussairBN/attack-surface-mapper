@@ -5,6 +5,7 @@ from datetime import datetime
 
 # ── Imports P1 ──────────────────────────────────────────────────────
 from core.manifest_parser import parse_manifest
+from core.apk_extractor import analyze_apk
 from core.component_model import AppManifest
 
 # ── Imports P2 ──────────────────────────────────────────────────────
@@ -36,7 +37,10 @@ def run_pipeline(manifest_path: str, output_html: str = "report.html"):
 
     # ── ÉTAPE 1 : Parsing du manifest (P1) ──────────────────────────
     print(f"\n[1/5] Parsing du manifest → {manifest_path}")
-    manifest: AppManifest = parse_manifest(manifest_path)
+    if manifest_path.endswith('.apk'):
+        manifest: AppManifest = analyze_apk(manifest_path)
+    else:
+        manifest: AppManifest = parse_manifest(manifest_path)
     print(f"      Package  : {manifest.package}")
     print(f"      SDK min  : {manifest.min_sdk} / target : {manifest.target_sdk}")
     print(f"      Activities : {len(manifest.activities)} | Services : {len(manifest.services)}")
