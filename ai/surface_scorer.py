@@ -71,24 +71,4 @@ def compute_score(features: AppFeatures) -> ScoreResult:
     else:
         result.level = "LOW"
 
-    # --- ML prediction ---
-    model = _load_model()
-    if model:
-        vector = pd.DataFrame(
-            [features.to_vector()],
-            columns=AppFeatures.feature_names()
-        )
-        result.ml_prediction = int(model.predict(vector)[0])
-        result.ml_confidence = round(
-            float(model.predict_proba(vector)[0][result.ml_prediction]) * 100, 1
-        )
-
-        # Top 5 facteurs les plus importants
-        names = AppFeatures.feature_names()
-        importances = model.feature_importances_
-        result.top_factors = sorted(
-            zip(names, importances),
-            key=lambda x: x[1],
-            reverse=True
-        )[:5]
     return result
