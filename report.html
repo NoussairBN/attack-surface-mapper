@@ -2,325 +2,378 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Attack Surface Report — com.example.vuln</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ASM Report — com.android.insecurebankv2</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #030712;
-      color: #f9fafb;
-      font-family: 'Syne', sans-serif;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
-    .container { max-width: 1100px; margin: 0 auto; }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 40px;
-      padding-bottom: 30px;
-      border-bottom: 1px solid #1f2937;
-    }
-    .logo { font-size: 11px; color: #4b5563; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-    h1 { font-size: 32px; font-weight: 800; color: #f9fafb; line-height: 1.2; }
-    .package { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6366f1; margin-top: 6px; }
-    .date { font-size: 12px; color: #4b5563; text-align: right; }
-    .score-ring {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 140px;
-      height: 140px;
-      min-width: 140px;
-      min-height: 140px;
-      border-radius: 50%;
-      border: 6px solid #eab308;
-      background: rgba(0,0,0,0.3);
-      box-shadow: 0 0 30px #eab30844;
-      aspect-ratio: 1 / 1;
-    }
-    .score-num { font-size: 32px; font-weight: 800; color: #eab308; line-height: 1; }
-    .score-label { font-size: 10px; color: #6b7280; letter-spacing: 2px; margin-top: 4px; }
-    .level-badge {
-      display: inline-block;
-      background: #eab30822;
-      color: #eab308;
-      border: 1px solid #eab30866;
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      margin-top: 8px;
-    }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-    .card {
-      background: #0f172a;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 24px;
-    }
-    .card-title {
-      font-size: 11px;
-      color: #4b5563;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 16px;
-    }
-    .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
-    .stat-label { font-size: 13px; color: #9ca3af; }
-    .stat-value { font-size: 13px; font-weight: 700; color: #f9fafb; font-family: 'JetBrains Mono', monospace; }
-    .sev-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
-    .sev-box { background: #111827; border-radius: 8px; padding: 12px; text-align: center; }
-    .sev-num { font-size: 28px; font-weight: 800; }
-    .sev-name { font-size: 10px; letter-spacing: 1px; margin-top: 4px; }
-    section { margin-bottom: 30px; }
-    section h2 {
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #4b5563;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #1f2937;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead tr { background: #111827; }
-    thead th {
-      padding: 10px 12px;
-      text-align: left;
-      font-size: 11px;
-      color: #4b5563;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    tbody tr:hover { background: #0f172a; }
-    @media print {
-      body { background: white; color: black; }
-      .card, section { break-inside: avoid; }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f3f4f6;color:#111827;font-family:'Inter',sans-serif;padding:28px 16px;font-size:14px;line-height:1.5;}
+    .w{max-width:1040px;margin:0 auto;}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;}
+    .lbl{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:500;}
+    h2{font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;padding-bottom:10px;border-bottom:1px solid #f3f4f6;margin-bottom:16px;font-weight:500;}
+    section{margin-bottom:24px;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:9px 12px;text-align:left;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:500;}
+    tbody tr:hover{background:#fafafa;}
+    tbody tr{border-bottom:1px solid #f3f4f6;}
+    tbody tr:last-child{border-bottom:none;}
+    .mermaid{background:#f9fafb;border-radius:8px;padding:12px;text-align:center;overflow-x:auto;}
   </style>
 </head>
 <body>
-<div class="container">
+<div class="w">
 
   <!-- Header -->
-  <div class="header">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:24px;margin-bottom:20px;">
     <div>
-      <div class="logo">Attack Surface Mapper · Rapport de Sécurité</div>
-      <h1>Android Security<br/>Analysis Report</h1>
-      <div class="package">com.example.vuln</div>
-      <div class="level-badge">MEDIUM</div>
+      <div style="font-size:11px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Attack Surface Mapper · Security Report</div>
+      <div style="font-size:22px;font-weight:700;color:#111827;margin-bottom:4px;">Android Security Analysis</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6366f1;margin-bottom:12px;">com.android.insecurebankv2</div>
+      <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444444;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:1px;">CRITICAL</span>
     </div>
-    <div style="text-align:center;">
-      <div class="score-ring">
-        <span class="score-num">34.7</span>
-        <span class="score-label">/ 100</span>
+    <div style="text-align:center;margin-left:24px;">
+      <div style="width:96px;height:96px;border-radius:50%;border:5px solid #ef4444;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;box-shadow:0 0 0 4px #fef2f2;">
+        <span style="font-size:26px;font-weight:700;color:#b91c1c;line-height:1;">76.0</span>
+        <span style="font-size:10px;color:#9ca3af;letter-spacing:1px;">/100</span>
       </div>
-      <div class="date" style="margin-top:12px;">Généré le<br/>16/05/2026 à 03:00</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">21 May 2026, 14:08</div>
     </div>
   </div>
 
-  <!-- Stats Grid -->
-  <div class="grid">
+  <!-- Summary grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
     <div class="card">
-      <div class="card-title">Informations Application</div>
-      <div class="stat-row"><span class="stat-label">Package</span><span class="stat-value" style="font-size:11px;">com.example.vuln</span></div>
-      <div class="stat-row"><span class="stat-label">SDK Minimum</span><span class="stat-value">21</span></div>
-      <div class="stat-row"><span class="stat-label">SDK Cible</span><span class="stat-value">33</span></div>
-      <div class="stat-row"><span class="stat-label">Debuggable</span><span class="stat-value" style="color:#ef4444">OUI ⚠</span></div>
-      <div class="stat-row"><span class="stat-label">Allow Backup</span><span class="stat-value" style="color:#f97316">OUI ⚠</span></div>
-      <div class="stat-row"><span class="stat-label">Activities</span><span class="stat-value">2</span></div>
-      <div class="stat-row"><span class="stat-label">Services</span><span class="stat-value">1</span></div>
-      <div class="stat-row"><span class="stat-label">Receivers</span><span class="stat-value">0</span></div>
-      <div class="stat-row"><span class="stat-label">Providers</span><span class="stat-value">0</span></div>
+      <div class="lbl">Application</div>
+      <table style="font-size:13px;">
+        <tr><td style="color:#6b7280;padding:5px 0;width:130px;">Package</td><td style="text-align:right;font-family:monospace;font-size:11px;color:#374151;">com.android.insecurebankv2</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">SDK min / cible</td><td style="text-align:right;font-weight:600;color:#111827;">? / ?</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Debuggable</td><td style="text-align:right;font-weight:600;color:#ef4444;">Oui</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Allow Backup</td><td style="text-align:right;font-weight:600;color:#f97316;">Oui</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Composants</td><td style="text-align:right;font-weight:600;color:#111827;">10A / 0S / 2R / 1P</td></tr>
+      </table>
     </div>
     <div class="card">
-      <div class="card-title">Findings par Sévérité</div>
-      <div class="sev-grid" style="margin-bottom:20px;">
-        <div class="sev-box">
-          <div class="sev-num" style="color:#ef4444;">2</div>
-          <div class="sev-name" style="color:#ef4444;">CRITICAL</div>
+      <div class="lbl">Findings</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#ef4444;">7</div>
+          <div style="font-size:10px;color:#ef4444;letter-spacing:0.5px;margin-top:2px;font-weight:500;">CRITICAL</div>
         </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#f97316;">2</div>
-          <div class="sev-name" style="color:#f97316;">HIGH</div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#f97316;">8</div>
+          <div style="font-size:10px;color:#f97316;letter-spacing:0.5px;margin-top:2px;font-weight:500;">HIGH</div>
         </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#eab308;">1</div>
-          <div class="sev-name" style="color:#eab308;">MEDIUM</div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#eab308;">1</div>
+          <div style="font-size:10px;color:#eab308;letter-spacing:0.5px;margin-top:2px;font-weight:500;">MEDIUM</div>
         </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#22c55e;">0</div>
-          <div class="sev-name" style="color:#22c55e;">LOW</div>
-        </div>
-      </div>
-      <div class="card-title">Score par Catégorie</div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:#22c55e;">0</div>
+          <div style="font-size:10px;color:#22c55e;letter-spacing:0.5px;margin-top:2px;font-weight:500;">LOW</div>
+        </div></div>
+      <div class="lbl">Score par categorie</div>
       
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">Exported Components</span>
-            <span style="font-size:13px;font-weight:700;color:#22c55e;">20.0/100</span>
+            <span style="font-size:12px;color:#6b7280;">Exported Components</span>
+            <span style="font-size:12px;font-weight:600;color:#ef4444;">80.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:20.0%;background:#22c55e;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:80.0%;background:#ef4444;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">Missing Permissions</span>
-            <span style="font-size:13px;font-weight:700;color:#22c55e;">25.0/100</span>
+            <span style="font-size:12px;color:#6b7280;">Missing Permissions</span>
+            <span style="font-size:12px;font-weight:600;color:#ef4444;">100.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:25.0%;background:#22c55e;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:100.0%;background:#ef4444;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">Dangerous Permissions</span>
-            <span style="font-size:13px;font-weight:700;color:#22c55e;">0.0/100</span>
+            <span style="font-size:12px;color:#6b7280;">Dangerous Permissions</span>
+            <span style="font-size:12px;font-weight:600;color:#ef4444;">100.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:0.0%;background:#22c55e;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:100.0%;background:#ef4444;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">App Flags</span>
-            <span style="font-size:13px;font-weight:700;color:#f97316;">66.7/100</span>
+            <span style="font-size:12px;color:#6b7280;">App Flags</span>
+            <span style="font-size:12px;font-weight:600;color:#f97316;">66.7/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:66.7%;background:#f97316;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:66.7%;background:#f97316;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">Deep Links</span>
-            <span style="font-size:13px;font-weight:700;color:#22c55e;">20.0/100</span>
+            <span style="font-size:12px;color:#6b7280;">Deep Links</span>
+            <span style="font-size:12px;font-weight:600;color:#22c55e;">0.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:20.0%;background:#22c55e;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:0.0%;background:#22c55e;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">P1 Advanced</span>
-            <span style="font-size:13px;font-weight:700;color:#22c55e;">0.0/100</span>
+            <span style="font-size:12px;color:#6b7280;">P1 Advanced</span>
+            <span style="font-size:12px;font-weight:600;color:#22c55e;">0.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:0.0%;background:#22c55e;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:0.0%;background:#22c55e;height:100%;border-radius:99px;"></div>
           </div>
         </div>
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">P2 Findings</span>
-            <span style="font-size:13px;font-weight:700;color:#ef4444;">73.3/100</span>
+            <span style="font-size:12px;color:#6b7280;">P2 Findings</span>
+            <span style="font-size:12px;font-weight:600;color:#ef4444;">100.0/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:73.3%;background:#ef4444;height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:100.0%;background:#ef4444;height:100%;border-radius:99px;"></div>
           </div>
         </div>
     </div>
   </div>
 
-  <!-- ML Section -->
+  <!-- ML -->
   
-        <div style="background:#111827;border-radius:12px;padding:20px;margin-top:20px;">
-          <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Prédiction ML</p>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:24px;">
+          <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Prediction ML — RandomForest</p>
           <div style="display:flex;align-items:center;gap:16px;">
-            <span style="font-size:28px;font-weight:800;color:#22c55e;">SÛR</span>
-            <span style="font-size:14px;color:#6b7280;">Confiance : <strong style="color:#f9fafb;">80.0%</strong></span>
+            <span style="font-size:24px;font-weight:700;color:#ef4444;">Risque</span>
+            <div style="width:1px;height:28px;background:#e5e7eb;"></div>
+            <span style="font-size:13px;color:#6b7280;">Confiance <strong style="color:#111827;font-weight:600;">60.0%</strong></span>
           </div>
-          <div style='margin-top:20px;'><p style='color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;'>Top Facteurs IA (RandomForest)</p>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">exported_activities</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:75.0%;background:#6366f1;height:100%;border-radius:4px;"></div>
+          <div style='margin-top:14px;border-top:1px solid #f3f4f6;padding-top:14px;'><p style='font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;'>Top facteurs IA</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">exported_activities</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:75.0%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">15.0%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">15.0%</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">exported_services</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:60.0%;background:#6366f1;height:100%;border-radius:4px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">exported_services</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:60.0%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">12.0%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">12.0%</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">implicit_intents_sensitive</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:55.0%;background:#6366f1;height:100%;border-radius:4px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">implicit_intents_sensitive</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:55.0%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">11.0%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">11.0%</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">deep_links_exposed</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:50.0%;background:#6366f1;height:100%;border-radius:4px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">deep_links_exposed</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:50.0%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">10.0%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">10.0%</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">high_findings</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:45.0%;background:#6366f1;height:100%;border-radius:4px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">high_findings</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:45.0%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">9.0%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">9.0%</span>
             </div></div>
         </div>
 
-  <!-- Findings Table -->
-  <section style="margin-top:30px;">
-    <h2>Vulnérabilités Détectées (5)</h2>
-    <div style="background:#0f172a;border:1px solid #1f2937;border-radius:12px;overflow:hidden;">
+  <!-- Diagrams -->
+  <section>
+    <h2>Diagrammes</h2>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="lbl">Pipeline complet</div>
+      <div class="mermaid">
+flowchart LR
+    A([AndroidManifest.xml]) --> B
+    subgraph P1 [P1 - Parser]
+        B[parse_manifest]
+    end
+    B --> C
+    subgraph P2 [P2 - Detection]
+        C[analyze_all_components] --> D[Findings]
+    end
+    D --> E
+    subgraph P4 [P4 - AI Engine]
+        E[extract_features] --> F[enrich_with_findings]
+        F --> G[RandomForest]
+        G --> H[compute_score]
+        H --> I[explain]
+        H --> J[recommendations]
+    end
+    I --> K([Rapport HTML])
+    J --> K
+    style P1 fill:#eff6ff,stroke:#3b82f6,color:#1e40af
+    style P2 fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    style P4 fill:#f0fdf4,stroke:#22c55e,color:#166534
+</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card">
+        <div class="lbl">Findings par severite</div>
+        <div class="mermaid">
+pie title Findings par severite
+    "Critical (7)" : 7
+    "High (8)" : 8
+    "Medium (1)" : 1
+</div>
+      </div>
+      <div class="card">
+        <div class="lbl">Composants vulnerables</div>
+        <div class="mermaid">
+flowchart TD
+    APP(["insecurebankv2"])
+    APP --> _application_["<application>"]
+    style _application_ fill:#fff7ed,stroke:#f97316,color:#c2410c
+    APP --> LoginActivity["LoginActivity"]
+    style LoginActivity fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> PostLogin["PostLogin"]
+    style PostLogin fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> DoTransfer["DoTransfer"]
+    style DoTransfer fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> ViewStatement["ViewStatement"]
+    style ViewStatement fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> ChangePassword["ChangePassword"]
+    style ChangePassword fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> MyBroadCastReceiver["MyBroadCastReceiver"]
+    style MyBroadCastReceiver fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> TrackUserContentProvider["TrackUserContentProvider"]
+    style TrackUserContentProvider fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    APP --> EnableWalletOptimizationReceiver["EnableWalletOptimizationReceiver"]
+    style EnableWalletOptimizationReceiver fill:#fff7ed,stroke:#f97316,color:#c2410c
+</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Findings table -->
+  <section>
+    <h2>Vulnerabilites detectees (16)</h2>
+    <div class="card" style="padding:0;overflow:hidden;">
       <table>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Composant</th>
-            <th>Sévérité</th>
-            <th>CWE</th>
-            <th>Détail</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Severite</th><th>Composant</th><th>Type</th><th>CWE</th><th>Detail</th></tr></thead>
         <tbody>
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">MANIFEST</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;"><application></td>
-          <td style="padding:10px 12px;"><span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">RISKLEVEL.HIGH</span></td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">CWE-215</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">L'application est compilée en mode debug (debuggable=true).</td>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;"><application></td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">manifest</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-215</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">L'application est compilée en mode debug (debuggable=true).</td>
         </tr>
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">MANIFEST</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;"><application></td>
-          <td style="padding:10px 12px;"><span style="background:#eab308;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">RISKLEVEL.MEDIUM</span></td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">CWE-530</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">L'application autorise les sauvegardes ADB (allowBackup=true ou absent).</td>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fefce8;color:#a16207;border:1px solid #eab30855;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.MEDIUM</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;"><application></td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">manifest</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-530</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">L'application autorise les sauvegardes ADB (allowBackup=true ou absent).</td>
         </tr>
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">ACTIVITY</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;">.MainActivity</td>
-          <td style="padding:10px 12px;"><span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">RISKLEVEL.CRITICAL</span></td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">CWE-926</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">Le composant '.MainActivity' est exporté sans protection. N'importe quelle app peut l'invo...</td>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">LoginActivity</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.LoginActivity' est exporté sans protect...</td>
         </tr>
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">ACTIVITY</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;">.DeepLinkActivity</td>
-          <td style="padding:10px 12px;"><span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">RISKLEVEL.CRITICAL</span></td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">CWE-926</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">Le composant '.DeepLinkActivity' est exporté sans protection. N'importe quelle app peut l'...</td>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">PostLogin</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.PostLogin' est exporté sans protection....</td>
         </tr>
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">ACTIVITY</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;">.DeepLinkActivity</td>
-          <td style="padding:10px 12px;"><span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">RISKLEVEL.HIGH</span></td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">CWE-939</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">Ce composant accepte des Deep Links depuis un navigateur internet via les schemes: ['myapp...</td>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">DoTransfer</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.DoTransfer' est exporté sans protection...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">ViewStatement</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.ViewStatement' est exporté sans protect...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">ChangePassword</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.ChangePassword' est exporté sans protec...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">MyBroadCastReceiver</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">receiver</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.MyBroadCastReceiver' est exporté sans p...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.CRITICAL</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">TrackUserContentProvider</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">provider</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Le composant 'com.android.insecurebankv2.TrackUserContentProvider' est exporté s...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">LoginActivity</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">PostLogin</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">DoTransfer</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">ViewStatement</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">ChangePassword</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">activity</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">MyBroadCastReceiver</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">receiver</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;"><span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">RISKLEVEL.HIGH</span></td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">EnableWalletOptimizationReceiver</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">receiver</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-862</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">Ce composant est accessible publiquement, et l'application possède les permissio...</td>
         </tr></tbody>
       </table>
     </div>
@@ -328,101 +381,96 @@
 
   <!-- Explanations -->
   <section>
-    <h2>Explications des Risques (5)</h2>
+    <h2>Explications (4)</h2>
     
-        <div style="background:#111827;border-left:4px solid #ef4444;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">CRITICAL</span>
-            <span style="font-weight:600;color:#f9fafb;">Application en mode debuggable</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">CWE-489</span>
+        <div style="border:1px solid #e5e7eb;border-left:3px solid #ef4444;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">CRITICAL</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">Application en mode debuggable</span>
+            <span style="margin-left:auto;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-489</span>
           </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">Permet d'attacher un debugger ADB, d'inspecter la mémoire et d'extraire des données en clair.</p>
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">Permet d'attacher un debugger ADB, d'inspecter la mémoire et d'extraire des données en clair.</p>
         </div>
-        <div style="background:#111827;border-left:4px solid #f97316;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">HIGH</span>
-            <span style="font-weight:600;color:#f9fafb;">Sauvegarde ADB activée (allowBackup=true)</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">CWE-530</span>
+        <div style="border:1px solid #e5e7eb;border-left:3px solid #f97316;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            <span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">HIGH</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">Sauvegarde ADB activée (allowBackup=true)</span>
+            <span style="margin-left:auto;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-530</span>
           </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">Un attaquant avec accès USB peut extraire toutes les données privées via 'adb backup' sans root.</p>
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">Un attaquant avec accès USB peut extraire toutes les données privées via 'adb backup' sans root.</p>
         </div>
-        <div style="background:#111827;border-left:4px solid #f97316;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">HIGH</span>
-            <span style="font-weight:600;color:#f9fafb;">2 composant(s) exporté(s) sans permission</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">CWE-926</span>
+        <div style="border:1px solid #e5e7eb;border-left:3px solid #ef4444;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">CRITICAL</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">8 composant(s) exporté(s) sans permission</span>
+            <span style="margin-left:auto;font-size:11px;color:#9ca3af;font-family:monospace;">CWE-926</span>
           </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">N'importe quelle application tierce peut invoquer ces composants sans authentification.</p>
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">N'importe quelle application tierce peut invoquer ces composants sans authentification.</p>
         </div>
-        <div style="background:#111827;border-left:4px solid #eab308;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <span style="background:#eab308;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">MEDIUM</span>
-            <span style="font-weight:600;color:#f9fafb;">1 deep link(s) BROWSABLE exposé(s)</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">CWE-939</span>
+        <div style="border:1px solid #e5e7eb;border-left:3px solid #ef4444;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">CRITICAL</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">7 finding(s) CRITICAL détectés par l'analyse P2</span>
+            <span style="margin-left:auto;font-size:11px;color:#9ca3af;font-family:monospace;">N/A</span>
           </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">Des apps malveillantes peuvent rediriger l'utilisateur vers votre app avec des données contrôlées (hijacking).</p>
-        </div>
-        <div style="background:#111827;border-left:4px solid #ef4444;border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">CRITICAL</span>
-            <span style="font-weight:600;color:#f9fafb;">2 finding(s) CRITICAL détectés par l'analyse P2</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">N/A</span>
-          </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">Vulnérabilités critiques confirmées nécessitant une correction immédiate.</p>
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">Vulnérabilités critiques confirmées nécessitant une correction immédiate.</p>
         </div>
   </section>
 
   <!-- Recommendations -->
   <section>
-    <h2>Recommandations de Correctifs (4)</h2>
+    <h2>Recommandations (3)</h2>
     
-        <div style="background:#111827;border-radius:8px;padding:16px 20px;margin-bottom:12px;border:1px solid #1f2937;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">CRITICAL</span>
-            <span style="font-weight:600;color:#f9fafb;">Désactiver le mode debug</span>
+        <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">CRITICAL</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">Désactiver le mode debug</span>
           </div>
-          <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Ne jamais shipper avec debuggable=true. Gradle active automatiquement le debug en build debug.</p>
-          <div style="background:#0f172a;border-radius:6px;padding:10px 14px;">
-            <code style="font-size:12px;color:#34d399;font-family:monospace;">android:debuggable="false"</code>
-          </div>
-        </div>
-        <div style="background:#111827;border-radius:8px;padding:16px 20px;margin-bottom:12px;border:1px solid #1f2937;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            <span style="background:#f97316;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">HIGH</span>
-            <span style="font-weight:600;color:#f9fafb;">Désactiver la sauvegarde ADB</span>
-          </div>
-          <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Utilisez l'API BackupAgent pour contrôler précisément les données sauvegardées.</p>
-          <div style="background:#0f172a;border-radius:6px;padding:10px 14px;">
-            <code style="font-size:12px;color:#34d399;font-family:monospace;">android:allowBackup="false"</code>
+          <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">Ne jamais shipper avec debuggable=true. Gradle active automatiquement le debug en build debug.</p>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;">
+            <code style="font-size:12px;color:#059669;font-family:monospace;">android:debuggable="false"</code>
           </div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:16px 20px;margin-bottom:12px;border:1px solid #1f2937;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            <span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">CRITICAL</span>
-            <span style="font-weight:600;color:#f9fafb;">Protéger les composants exportés</span>
+        <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="background:#fff7ed;color:#c2410c;border:1px solid #f9731655;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">HIGH</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">Désactiver la sauvegarde ADB</span>
           </div>
-          <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Définissez une permission custom avec protectionLevel='signature' sur chaque composant exporté.</p>
-          <div style="background:#0f172a;border-radius:6px;padding:10px 14px;">
-            <code style="font-size:12px;color:#34d399;font-family:monospace;">android:permission="com.example.MY_PERMISSION"</code>
+          <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">Utilisez l'API BackupAgent pour contrôler précisément les données sauvegardées.</p>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;">
+            <code style="font-size:12px;color:#059669;font-family:monospace;">android:allowBackup="false"</code>
           </div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:16px 20px;margin-bottom:12px;border:1px solid #1f2937;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            <span style="background:#eab308;color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">MEDIUM</span>
-            <span style="font-weight:600;color:#f9fafb;">Vérifier les deep links avec App Links</span>
+        <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="background:#fef2f2;color:#b91c1c;border:1px solid #ef444455;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">CRITICAL</span>
+            <span style="font-size:13px;font-weight:600;color:#111827;">Protéger les composants exportés</span>
           </div>
-          <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">Utilisez Android App Links pour lier cryptographiquement votre app à votre domaine.</p>
-          <div style="background:#0f172a;border-radius:6px;padding:10px 14px;">
-            <code style="font-size:12px;color:#34d399;font-family:monospace;">android:autoVerify="true" + assetlinks.json</code>
+          <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">Définissez une permission custom avec protectionLevel='signature' sur chaque composant exporté.</p>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;">
+            <code style="font-size:12px;color:#059669;font-family:monospace;">android:permission="com.example.MY_PERMISSION"</code>
           </div>
         </div>
   </section>
 
-  <!-- Footer -->
-  <div style="text-align:center;padding:30px 0;color:#1f2937;font-size:11px;letter-spacing:2px;">
-    ATTACK SURFACE MAPPER · RAPPORT GÉNÉRÉ LE 16/05/2026 à 03:00 · P4 AI ENGINE
+  <div style="text-align:center;padding:20px 0;font-size:11px;color:#d1d5db;letter-spacing:2px;text-transform:uppercase;">
+    Attack Surface Mapper · 21 May 2026, 14:08 · P4 AI Engine
   </div>
 
 </div>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+      primaryColor: '#eff6ff',
+      primaryTextColor: '#1e40af',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#9ca3af',
+      background: '#f9fafb',
+      fontSize: '13px'
+    }
+  });
+</script>
 </body>
 </html>

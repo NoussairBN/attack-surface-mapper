@@ -1,27 +1,104 @@
+"""
+reports/report_generator.py
+Rapport HTML — theme clair, UI soignee.
+"""
+
 from datetime import datetime
 from typing import List, Dict
 
 
-def _severity_color(severity: str) -> str:
+def _severity_color(severity: str) -> tuple:
     s = severity.upper()
-    if "CRITICAL" in s: return "#ef4444"
-    if "HIGH" in s:     return "#f97316"
-    if "MEDIUM" in s:   return "#eab308"
-    return "#22c55e"
+    if "CRITICAL" in s: return ("#fef2f2", "#ef4444", "#b91c1c")
+    if "HIGH" in s:     return ("#fff7ed", "#f97316", "#c2410c")
+    if "MEDIUM" in s:   return ("#fefce8", "#eab308", "#a16207")
+    return ("#f0fdf4", "#22c55e", "#15803d")
 
 
-def _severity_badge(severity: str) -> str:
-    color = _severity_color(severity)
-    return f'<span style="background:{color};color:#fff;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:1px;">{severity.upper()}</span>'
+def _badge(severity: str) -> str:
+    bg, border, text = _severity_color(severity)
+    return (f'<span style="background:{bg};color:{text};border:1px solid {border}55;'
+            f'padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600;">'
+            f'{severity.upper()}</span>')
 
 
-def _level_color(level: str) -> str:
+def _level_accent(level: str) -> tuple:
     return {
-        "CRITICAL": "#ef4444",
-        "HIGH":     "#f97316",
-        "MEDIUM":   "#eab308",
-        "LOW":      "#22c55e",
-    }.get(level.upper(), "#6b7280")
+        "CRITICAL": ("#fef2f2", "#ef4444", "#b91c1c"),
+        "HIGH":     ("#fff7ed", "#f97316", "#c2410c"),
+        "MEDIUM":   ("#fefce8", "#eab308", "#a16207"),
+        "LOW":      ("#f0fdf4", "#22c55e", "#15803d"),
+    }.get(level.upper(), ("#f9fafb", "#6b7280", "#374151"))
+
+
+def _mermaid_pipeline() -> str:
+    return """<div class="mermaid">
+flowchart LR
+    A([AndroidManifest.xml]) --> B
+    subgraph P1 [P1 - Parser]
+        B[parse_manifest]
+    end
+    B --> C
+    subgraph P2 [P2 - Detection]
+        C[analyze_all_components] --> D[Findings]
+    end
+    D --> E
+    subgraph P4 [P4 - AI Engine]
+        E[extract_features] --> F[enrich_with_findings]
+        F --> G[RandomForest]
+        G --> H[compute_score]
+        H --> I[explain]
+        H --> J[recommendations]
+    end
+    I --> K([Rapport HTML])
+    J --> K
+    style P1 fill:#eff6ff,stroke:#3b82f6,color:#1e40af
+    style P2 fill:#fef2f2,stroke:#ef4444,color:#991b1b
+    style P4 fill:#f0fdf4,stroke:#22c55e,color:#166534
+</div>"""
+
+
+def _mermaid_pie(sev_counts: dict) -> str:
+    lines = []
+    labels = {"CRITICAL": "Critical", "HIGH": "High", "MEDIUM": "Medium", "LOW": "Low"}
+    for key, label in labels.items():
+        count = sev_counts.get(key, 0)
+        if count > 0:
+            lines.append(f'    "{label} ({count})" : {count}')
+    if not lines:
+        return "<p style='color:#9ca3af;font-size:13px;text-align:center;padding:20px;'>Aucun finding.</p>"
+    inner = "\n".join(lines)
+    return f"""<div class="mermaid">
+pie title Findings par severite
+{inner}
+</div>"""
+
+
+def _mermaid_components(manifest, findings) -> str:
+    lines = ["flowchart TD"]
+    pkg_short = manifest.package.split(".")[-1] if manifest.package else "app"
+    lines.append(f'    APP(["{pkg_short}"])')
+    added = set()
+    finding_map = {}
+    for f in findings:
+        sev = str(f.severity).upper()
+        existing = finding_map.get(f.component_name)
+        if not existing or "CRITICAL" in sev:
+            finding_map[f.component_name] = (f.component_name.split(".")[-1], sev)
+    for comp_name, (short_name, sev) in finding_map.items():
+        node_id = "".join(c if c.isalnum() else "_" for c in short_name)
+        if node_id in added:
+            node_id = node_id + str(len(added))
+        added.add(node_id)
+        if "CRITICAL" in sev:
+            style = "fill:#fef2f2,stroke:#ef4444,color:#991b1b"
+        elif "HIGH" in sev:
+            style = "fill:#fff7ed,stroke:#f97316,color:#c2410c"
+        else:
+            style = "fill:#fefce8,stroke:#eab308,color:#a16207"
+        lines.append(f'    APP --> {node_id}["{short_name}"]')
+        lines.append(f'    style {node_id} {style}')
+    return '<div class="mermaid">\n' + "\n".join(lines) + "\n</div>"
 
 
 def generate_html_report(
@@ -33,11 +110,10 @@ def generate_html_report(
     recommendations: List[Dict],
     output_path: str = "report.html",
 ):
-    level_color = _level_color(score_result.level)
+    bg, border_c, text_c = _level_accent(score_result.level)
     score = score_result.total_score
-    now = datetime.now().strftime("%d/%m/%Y à %H:%M")
+    now = datetime.now().strftime("%d %b %Y, %H:%M")
 
-    # Sévérité counts
     sev_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
     for f in findings:
         s = str(f.severity).upper()
@@ -50,273 +126,199 @@ def generate_html_report(
     breakdown_rows = ""
     for cat, val in score_result.breakdown.items():
         label = cat.replace("_", " ").title()
-        color = "#ef4444" if val > 70 else "#f97316" if val > 40 else "#22c55e"
+        bar_c = "#ef4444" if val > 70 else "#f97316" if val > 40 else "#22c55e"
         breakdown_rows += f"""
-        <div style="margin-bottom:14px;">
+        <div style="margin-bottom:11px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="font-size:13px;color:#d1d5db;">{label}</span>
-            <span style="font-size:13px;font-weight:700;color:{color};">{val}/100</span>
+            <span style="font-size:12px;color:#6b7280;">{label}</span>
+            <span style="font-size:12px;font-weight:600;color:{bar_c};">{val}/100</span>
           </div>
-          <div style="background:#1f2937;border-radius:6px;height:8px;overflow:hidden;">
-            <div style="width:{val}%;background:{color};height:100%;border-radius:6px;transition:width 1s;"></div>
+          <div style="background:#f3f4f6;border-radius:99px;height:5px;overflow:hidden;">
+            <div style="width:{val}%;background:{bar_c};height:100%;border-radius:99px;"></div>
           </div>
         </div>"""
 
-    # Findings table rows
+    # Findings rows
     finding_rows = ""
     for f in findings:
         sev = str(f.severity).upper()
-        color = _severity_color(sev)
+        detail = f.detail[:80] + ("..." if len(f.detail) > 80 else "")
         finding_rows += f"""
-        <tr style="border-bottom:1px solid #1f2937;">
-          <td style="padding:10px 12px;font-size:12px;color:#9ca3af;">{f.component_type.upper()}</td>
-          <td style="padding:10px 12px;font-size:12px;color:#e5e7eb;font-family:monospace;">{f.component_name}</td>
-          <td style="padding:10px 12px;">{_severity_badge(sev)}</td>
-          <td style="padding:10px 12px;font-size:11px;color:#6b7280;">{f.cwe}</td>
-          <td style="padding:10px 12px;font-size:12px;color:#d1d5db;">{f.detail[:90]}{'...' if len(f.detail) > 90 else ''}</td>
+        <tr>
+          <td style="padding:10px 12px;">{_badge(sev)}</td>
+          <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#374151;">{f.component_name.split('.')[-1]}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">{f.component_type}</td>
+          <td style="padding:10px 12px;font-size:11px;color:#9ca3af;font-family:monospace;">{f.cwe}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#6b7280;">{detail}</td>
         </tr>"""
 
-    # Explanations cards
+    # Explanation cards
     explanation_cards = ""
     for e in explanations:
         sev = e.get("severity", "MEDIUM")
-        color = _severity_color(sev)
-        cwe = e.get("cwe", "N/A")
+        _, bdr, _ = _severity_color(sev)
         explanation_cards += f"""
-        <div style="background:#111827;border-left:4px solid {color};border-radius:8px;padding:16px 20px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            {_severity_badge(sev)}
-            <span style="font-weight:600;color:#f9fafb;">{e['issue']}</span>
-            <span style="margin-left:auto;font-size:11px;color:#6b7280;font-family:monospace;">{cwe}</span>
+        <div style="border:1px solid #e5e7eb;border-left:3px solid {bdr};border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+            {_badge(sev)}
+            <span style="font-size:13px;font-weight:600;color:#111827;">{e['issue']}</span>
+            <span style="margin-left:auto;font-size:11px;color:#9ca3af;font-family:monospace;">{e.get('cwe','')}</span>
           </div>
-          <p style="margin:0;font-size:13px;color:#9ca3af;line-height:1.6;">{e['why']}</p>
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">{e['why']}</p>
         </div>"""
 
-    # Recommendations cards
+    # Recommendation cards
     rec_cards = ""
     for r in recommendations:
-        color = _severity_color(r["priority"])
+        _, bdr, _ = _severity_color(r["priority"])
         rec_cards += f"""
-        <div style="background:#111827;border-radius:8px;padding:16px 20px;margin-bottom:12px;border:1px solid #1f2937;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-            {_severity_badge(r['priority'])}
-            <span style="font-weight:600;color:#f9fafb;">{r['title']}</span>
+        <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:10px;background:#fff;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            {_badge(r['priority'])}
+            <span style="font-size:13px;font-weight:600;color:#111827;">{r['title']}</span>
           </div>
-          <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;">{r['description']}</p>
-          <div style="background:#0f172a;border-radius:6px;padding:10px 14px;">
-            <code style="font-size:12px;color:#34d399;font-family:monospace;">{r['patch']}</code>
+          <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">{r['description']}</p>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:10px 14px;">
+            <code style="font-size:12px;color:#059669;font-family:monospace;">{r['patch']}</code>
           </div>
         </div>"""
 
-    # Top ML factors
+    # ML section
     top_factors_html = ""
     if score_result.top_factors:
-        top_factors_html = "<div style='margin-top:20px;'><p style='color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;'>Top Facteurs IA (RandomForest)</p>"
+        top_factors_html = "<div style='margin-top:14px;border-top:1px solid #f3f4f6;padding-top:14px;'>"
+        top_factors_html += "<p style='font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;'>Top facteurs IA</p>"
         for name, imp in score_result.top_factors:
             pct = round(imp * 100, 1)
             top_factors_html += f"""
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <span style="font-size:12px;color:#d1d5db;width:240px;font-family:monospace;">{name}</span>
-              <div style="flex:1;background:#1f2937;border-radius:4px;height:6px;">
-                <div style="width:{min(pct*5,100)}%;background:#6366f1;height:100%;border-radius:4px;"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#374151;font-family:monospace;min-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{name}</span>
+              <div style="flex:1;background:#f3f4f6;border-radius:99px;height:4px;">
+                <div style="width:{min(pct*5,100)}%;background:#6366f1;height:100%;border-radius:99px;"></div>
               </div>
-              <span style="font-size:11px;color:#6b7280;width:40px;text-align:right;">{pct}%</span>
+              <span style="font-size:11px;color:#9ca3af;min-width:35px;text-align:right;">{pct}%</span>
             </div>"""
         top_factors_html += "</div>"
 
     ml_section = ""
     if score_result.ml_confidence > 0:
-        ml_label = "RISQUÉ" if score_result.ml_prediction else "SÛR"
-        ml_color = "#ef4444" if score_result.ml_prediction else "#22c55e"
+        ml_label = "Risque" if score_result.ml_prediction else "Sur"
+        ml_color = "#ef4444" if score_result.ml_prediction else "#16a34a"
         ml_section = f"""
-        <div style="background:#111827;border-radius:12px;padding:20px;margin-top:20px;">
-          <p style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Prédiction ML</p>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:24px;">
+          <p style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Prediction ML — RandomForest</p>
           <div style="display:flex;align-items:center;gap:16px;">
-            <span style="font-size:28px;font-weight:800;color:{ml_color};">{ml_label}</span>
-            <span style="font-size:14px;color:#6b7280;">Confiance : <strong style="color:#f9fafb;">{score_result.ml_confidence}%</strong></span>
+            <span style="font-size:24px;font-weight:700;color:{ml_color};">{ml_label}</span>
+            <div style="width:1px;height:28px;background:#e5e7eb;"></div>
+            <span style="font-size:13px;color:#6b7280;">Confiance <strong style="color:#111827;font-weight:600;">{score_result.ml_confidence}%</strong></span>
           </div>
           {top_factors_html}
         </div>"""
+
+    sev_boxes = ""
+    for key, color in [("CRITICAL","#ef4444"),("HIGH","#f97316"),("MEDIUM","#eab308"),("LOW","#22c55e")]:
+        sev_boxes += f"""
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:{color};">{sev_counts[key]}</div>
+          <div style="font-size:10px;color:{color};letter-spacing:0.5px;margin-top:2px;font-weight:500;">{key}</div>
+        </div>"""
+
+    mermaid_pipeline = _mermaid_pipeline()
+    mermaid_pie      = _mermaid_pie(sev_counts)
+    mermaid_comps    = _mermaid_components(manifest, findings)
 
     html = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Attack Surface Report — {manifest.package}</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ASM Report — {manifest.package}</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{
-      background: #030712;
-      color: #f9fafb;
-      font-family: 'Syne', sans-serif;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }}
-    .container {{ max-width: 1100px; margin: 0 auto; }}
-    .header {{
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 40px;
-      padding-bottom: 30px;
-      border-bottom: 1px solid #1f2937;
-    }}
-    .logo {{ font-size: 11px; color: #4b5563; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }}
-    h1 {{ font-size: 32px; font-weight: 800; color: #f9fafb; line-height: 1.2; }}
-    .package {{ font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #6366f1; margin-top: 6px; }}
-    .date {{ font-size: 12px; color: #4b5563; text-align: right; }}
-    .score-ring {{
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      border: 6px solid {level_color};
-      background: rgba(0,0,0,0.3);
-      box-shadow: 0 0 30px {level_color}44;
-    }}
-    .score-num {{ font-size: 36px; font-weight: 800; color: {level_color}; line-height: 1; }}
-    .score-label {{ font-size: 10px; color: #6b7280; letter-spacing: 2px; margin-top: 4px; }}
-    .level-badge {{
-      display: inline-block;
-      background: {level_color}22;
-      color: {level_color};
-      border: 1px solid {level_color}66;
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      margin-top: 8px;
-    }}
-    .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }}
-    .card {{
-      background: #0f172a;
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 24px;
-    }}
-    .card-title {{
-      font-size: 11px;
-      color: #4b5563;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 16px;
-    }}
-    .stat-row {{ display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }}
-    .stat-label {{ font-size: 13px; color: #9ca3af; }}
-    .stat-value {{ font-size: 13px; font-weight: 700; color: #f9fafb; font-family: 'JetBrains Mono', monospace; }}
-    .sev-grid {{ display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }}
-    .sev-box {{ background: #111827; border-radius: 8px; padding: 12px; text-align: center; }}
-    .sev-num {{ font-size: 28px; font-weight: 800; }}
-    .sev-name {{ font-size: 10px; letter-spacing: 1px; margin-top: 4px; }}
-    section {{ margin-bottom: 30px; }}
-    section h2 {{
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #4b5563;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #1f2937;
-    }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-    thead tr {{ background: #111827; }}
-    thead th {{
-      padding: 10px 12px;
-      text-align: left;
-      font-size: 11px;
-      color: #4b5563;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }}
-    tbody tr:hover {{ background: #0f172a; }}
-    @media print {{
-      body {{ background: white; color: black; }}
-      .card, section {{ break-inside: avoid; }}
-    }}
+    *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0;}}
+    body{{background:#f3f4f6;color:#111827;font-family:'Inter',sans-serif;padding:28px 16px;font-size:14px;line-height:1.5;}}
+    .w{{max-width:1040px;margin:0 auto;}}
+    .card{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;}}
+    .lbl{{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:500;}}
+    h2{{font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;padding-bottom:10px;border-bottom:1px solid #f3f4f6;margin-bottom:16px;font-weight:500;}}
+    section{{margin-bottom:24px;}}
+    table{{width:100%;border-collapse:collapse;}}
+    thead th{{padding:9px 12px;text-align:left;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:500;}}
+    tbody tr:hover{{background:#fafafa;}}
+    tbody tr{{border-bottom:1px solid #f3f4f6;}}
+    tbody tr:last-child{{border-bottom:none;}}
+    .mermaid{{background:#f9fafb;border-radius:8px;padding:12px;text-align:center;overflow-x:auto;}}
   </style>
 </head>
 <body>
-<div class="container">
+<div class="w">
 
   <!-- Header -->
-  <div class="header">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:24px;margin-bottom:20px;">
     <div>
-      <div class="logo">Attack Surface Mapper · Rapport de Sécurité</div>
-      <h1>Android Security<br/>Analysis Report</h1>
-      <div class="package">{manifest.package}</div>
-      <div class="level-badge">{score_result.level}</div>
+      <div style="font-size:11px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Attack Surface Mapper · Security Report</div>
+      <div style="font-size:22px;font-weight:700;color:#111827;margin-bottom:4px;">Android Security Analysis</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6366f1;margin-bottom:12px;">{manifest.package}</div>
+      <span style="background:{bg};color:{text_c};border:1px solid {border_c}44;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:1px;">{score_result.level}</span>
     </div>
-    <div style="text-align:center;">
-      <div class="score-ring">
-        <span class="score-num">{score}</span>
-        <span class="score-label">/ 100</span>
+    <div style="text-align:center;margin-left:24px;">
+      <div style="width:96px;height:96px;border-radius:50%;border:5px solid {border_c};display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;box-shadow:0 0 0 4px {bg};">
+        <span style="font-size:26px;font-weight:700;color:{text_c};line-height:1;">{score}</span>
+        <span style="font-size:10px;color:#9ca3af;letter-spacing:1px;">/100</span>
       </div>
-      <div class="date" style="margin-top:12px;">Généré le<br/>{now}</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:8px;">{now}</div>
     </div>
   </div>
 
-  <!-- Stats Grid -->
-  <div class="grid">
+  <!-- Summary grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
     <div class="card">
-      <div class="card-title">Informations Application</div>
-      <div class="stat-row"><span class="stat-label">Package</span><span class="stat-value" style="font-size:11px;">{manifest.package}</span></div>
-      <div class="stat-row"><span class="stat-label">SDK Minimum</span><span class="stat-value">{manifest.min_sdk or 'N/A'}</span></div>
-      <div class="stat-row"><span class="stat-label">SDK Cible</span><span class="stat-value">{manifest.target_sdk or 'N/A'}</span></div>
-      <div class="stat-row"><span class="stat-label">Debuggable</span><span class="stat-value" style="color:{'#ef4444' if manifest.debuggable else '#22c55e'}">{'OUI ⚠' if manifest.debuggable else 'NON ✓'}</span></div>
-      <div class="stat-row"><span class="stat-label">Allow Backup</span><span class="stat-value" style="color:{'#f97316' if manifest.allow_backup else '#22c55e'}">{'OUI ⚠' if manifest.allow_backup else 'NON ✓'}</span></div>
-      <div class="stat-row"><span class="stat-label">Activities</span><span class="stat-value">{len(manifest.activities)}</span></div>
-      <div class="stat-row"><span class="stat-label">Services</span><span class="stat-value">{len(manifest.services)}</span></div>
-      <div class="stat-row"><span class="stat-label">Receivers</span><span class="stat-value">{len(manifest.receivers)}</span></div>
-      <div class="stat-row"><span class="stat-label">Providers</span><span class="stat-value">{len(manifest.providers)}</span></div>
+      <div class="lbl">Application</div>
+      <table style="font-size:13px;">
+        <tr><td style="color:#6b7280;padding:5px 0;width:130px;">Package</td><td style="text-align:right;font-family:monospace;font-size:11px;color:#374151;">{manifest.package}</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">SDK min / cible</td><td style="text-align:right;font-weight:600;color:#111827;">{manifest.min_sdk or '?'} / {manifest.target_sdk or '?'}</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Debuggable</td><td style="text-align:right;font-weight:600;color:{'#ef4444' if manifest.debuggable else '#16a34a'};">{'Oui' if manifest.debuggable else 'Non'}</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Allow Backup</td><td style="text-align:right;font-weight:600;color:{'#f97316' if manifest.allow_backup else '#16a34a'};">{'Oui' if manifest.allow_backup else 'Non'}</td></tr>
+        <tr><td style="color:#6b7280;padding:5px 0;">Composants</td><td style="text-align:right;font-weight:600;color:#111827;">{len(manifest.activities)}A / {len(manifest.services)}S / {len(manifest.receivers)}R / {len(manifest.providers)}P</td></tr>
+      </table>
     </div>
     <div class="card">
-      <div class="card-title">Findings par Sévérité</div>
-      <div class="sev-grid" style="margin-bottom:20px;">
-        <div class="sev-box">
-          <div class="sev-num" style="color:#ef4444;">{sev_counts['CRITICAL']}</div>
-          <div class="sev-name" style="color:#ef4444;">CRITICAL</div>
-        </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#f97316;">{sev_counts['HIGH']}</div>
-          <div class="sev-name" style="color:#f97316;">HIGH</div>
-        </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#eab308;">{sev_counts['MEDIUM']}</div>
-          <div class="sev-name" style="color:#eab308;">MEDIUM</div>
-        </div>
-        <div class="sev-box">
-          <div class="sev-num" style="color:#22c55e;">{sev_counts['LOW']}</div>
-          <div class="sev-name" style="color:#22c55e;">LOW</div>
-        </div>
-      </div>
-      <div class="card-title">Score par Catégorie</div>
+      <div class="lbl">Findings</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">{sev_boxes}</div>
+      <div class="lbl">Score par categorie</div>
       {breakdown_rows}
     </div>
   </div>
 
-  <!-- ML Section -->
+  <!-- ML -->
   {ml_section}
 
-  <!-- Findings Table -->
-  <section style="margin-top:30px;">
-    <h2>Vulnérabilités Détectées ({len(findings)})</h2>
-    <div style="background:#0f172a;border:1px solid #1f2937;border-radius:12px;overflow:hidden;">
+  <!-- Diagrams -->
+  <section>
+    <h2>Diagrammes</h2>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="lbl">Pipeline complet</div>
+      {mermaid_pipeline}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card">
+        <div class="lbl">Findings par severite</div>
+        {mermaid_pie}
+      </div>
+      <div class="card">
+        <div class="lbl">Composants vulnerables</div>
+        {mermaid_comps}
+      </div>
+    </div>
+  </section>
+
+  <!-- Findings table -->
+  <section>
+    <h2>Vulnerabilites detectees ({len(findings)})</h2>
+    <div class="card" style="padding:0;overflow:hidden;">
       <table>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Composant</th>
-            <th>Sévérité</th>
-            <th>CWE</th>
-            <th>Détail</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Severite</th><th>Composant</th><th>Type</th><th>CWE</th><th>Detail</th></tr></thead>
         <tbody>{finding_rows}</tbody>
       </table>
     </div>
@@ -324,22 +326,35 @@ def generate_html_report(
 
   <!-- Explanations -->
   <section>
-    <h2>Explications des Risques ({len(explanations)})</h2>
+    <h2>Explications ({len(explanations)})</h2>
     {explanation_cards}
   </section>
 
   <!-- Recommendations -->
   <section>
-    <h2>Recommandations de Correctifs ({len(recommendations)})</h2>
+    <h2>Recommandations ({len(recommendations)})</h2>
     {rec_cards}
   </section>
 
-  <!-- Footer -->
-  <div style="text-align:center;padding:30px 0;color:#1f2937;font-size:11px;letter-spacing:2px;">
-    ATTACK SURFACE MAPPER · RAPPORT GÉNÉRÉ LE {now} · P4 AI ENGINE
+  <div style="text-align:center;padding:20px 0;font-size:11px;color:#d1d5db;letter-spacing:2px;text-transform:uppercase;">
+    Attack Surface Mapper · {now} · P4 AI Engine
   </div>
 
 </div>
+<script>
+  mermaid.initialize({{
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {{
+      primaryColor: '#eff6ff',
+      primaryTextColor: '#1e40af',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#9ca3af',
+      background: '#f9fafb',
+      fontSize: '13px'
+    }}
+  }});
+</script>
 </body>
 </html>"""
 
